@@ -1,0 +1,33 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.hbop.tripleinventory.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "M_PlayerEntity",
+    "M_PlayerInventory",
+    "M_ScreenHandler",
+    "M_ServerPlayNetworkHandler",
+    "screenhandlers.M_AbstractFurnaceScreenHandler",
+    "screenhandlers.M_BeaconScreenHandler",
+    "screenhandlers.M_BrewingStandScreenHandler",
+    "screenhandlers.M_CartographyTableScreenHandler",
+    "screenhandlers.M_CrafterScreenHandler",
+    "screenhandlers.M_CraftingScreenHandler",
+    "screenhandlers.M_EnchantmentScreenHandler",
+    "screenhandlers.M_ForgingScreenHandler",
+    "screenhandlers.M_Generic3x3ContainerScreenHandler",
+    "screenhandlers.M_GenericContainerScreenHandler",
+    "screenhandlers.M_GrindstoneScreenHandler",
+    "screenhandlers.M_HopperScreenHandler",
+    "screenhandlers.M_HorseScreenHandler",
+    "screenhandlers.M_LoomScreenHandler",
+    "screenhandlers.M_MerchantScreenHandler",
+    "screenhandlers.M_PlayerScreenHandler",
+    "screenhandlers.M_ShulkerBoxScreenHandler",
+    "screenhandlers.M_StonecutterScreenHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

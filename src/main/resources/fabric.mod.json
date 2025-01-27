@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "tripleinventory",
+  "version": "${version}",
+  "name": "TripleInventory",
+  "description": "",
+  "authors": ["HBOP"],
+  "contact": {},
+  "license": "MIT",
+  "icon": "icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "dev.hbop.tripleinventory.client.TripleInventoryClient"
+    ],
+    "main": [
+      "dev.hbop.tripleinventory.TripleInventory"
+    ]
+  },
+  "mixins": [
+    "tripleinventory.mixins.json",
+    {
+      "config": "tripleinventory.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "owo-lib": ">=0.12.20+1.21.4"
+  },
+  "recommends": {
+    "modmenu": ">=13.0.0"
+  }
+}
