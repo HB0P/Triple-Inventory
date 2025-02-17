@@ -46,7 +46,7 @@ public abstract class M_ClientPlayerInteractionManager {
         assert player != null;
         
         int i = InventoryHelper.getSlotInHotbarMatching(player.getInventory(), stack -> stack.isSuitableFor(state));
-        if (i != -1) {
+        if (i != -1 && i != player.getInventory().selectedSlot) {
             ClientSlotData.INSTANCE.set(player.getInventory().selectedSlot, true);
             player.getInventory().selectedSlot = i;
             syncSelectedSlot();

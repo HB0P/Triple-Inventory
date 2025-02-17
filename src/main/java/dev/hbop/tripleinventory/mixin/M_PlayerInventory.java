@@ -40,7 +40,7 @@ public abstract class M_PlayerInventory {
         return combinedInventory.get(3);
     }
     
-    // write tool slots to nbt
+    // write extended slots to nbt
     @Inject(
             method = "writeNbt",
             at = @At("RETURN")
@@ -55,7 +55,7 @@ public abstract class M_PlayerInventory {
         }
     }
     
-    // read tool slots from nbt
+    // read extended slots from nbt
     @Inject(
             method = "readNbt",
             at = @At("RETURN")
@@ -73,7 +73,7 @@ public abstract class M_PlayerInventory {
         }
     }
     
-    // include tool slots inventory size
+    // include extended slots inventory size
     @Inject(
             method = "size",
             at = @At("RETURN"),
@@ -83,7 +83,7 @@ public abstract class M_PlayerInventory {
         cir.setReturnValue(cir.getReturnValue() + this.getExtendedInventory().size());
     }
     
-    // include tool slots in empty calculation
+    // include extended slots in empty calculation
     @Inject(
             method = "isEmpty",
             at = @At("RETURN"),
@@ -124,7 +124,7 @@ public abstract class M_PlayerInventory {
         }
     }
     
-    // allow tool hotbar indexes
+    // allow extended hotbar indexes
     @Inject(
             method = "isValidHotbarIndex",
             at = @At("RETURN"),

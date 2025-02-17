@@ -1,10 +1,14 @@
 package dev.hbop.tripleinventory.helper;
 
 import dev.hbop.tripleinventory.TripleInventory;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.collection.DefaultedList;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -17,7 +21,7 @@ public class InventoryHelper {
     }
     
     /**
-     * Get the first slot in the hotbar & tool hotbar matching a predicate<br>
+     * Get the first slot in the hotbar & extended hotbar matching a predicate<br>
      * @param inventory The inventory to test in
      * @param predicate The predicate to test stacks against
      * @return The first matching slot, or -1 if none are found
@@ -38,28 +42,39 @@ public class InventoryHelper {
         return -1;
     }
     
-    public static void addExtraSlots(PlayerInventory inventory, int width, int height, Consumer<Slot> consumer) {
+    public static void addExtraSlots(PlayerInventory inventory, int width, int height, int shulkerPreviewShift, Consumer<Slot> consumer) {
         int size = TripleInventory.extendedInventorySize();
         // left hotbar
         for (int i = 0; i < size; i++) {
-            consumer.accept(new EquipmentSlot(inventory, i + 41, -14 - i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
+            consumer.accept(new ExtendedSlot(inventory, i + 41, -14 - i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
         }
         // right hotbar
         for (int i = 0; i < size; i++) {
-            consumer.accept(new EquipmentSlot(inventory, i + 50, width - 2 + i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
+            consumer.accept(new ExtendedSlot(inventory, i + 50, width - 2 + i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
         }
         // left inventory
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < size; x++) {
-                consumer.accept(new EquipmentSlot(inventory, y * 9 + x + 59, -14 - x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
+                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 59, -14 - x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
             }
         }
         // right inventory
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < size; x++) {
-                consumer.accept(new EquipmentSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
+                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
             }
         }
+        // shulker
+        SimpleInventory shulkerInventory = new SimpleInventory(27);
+        for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < 9; x++) {
+                consumer.accept(new ShulkerSlot(shulkerInventory, y * 9 + x, 8 + x * 18 + shulkerPreviewShift, height - 2 + y * 18));
+            }
+        }
+    }
+
+    public static void addExtraSlots(PlayerInventory inventory, int width, int height, Consumer<Slot> consumer) {
+        addExtraSlots(inventory, width, height, 0, consumer);
     }
     
     public static void addExtraSlots(PlayerInventory inventory, Consumer<Slot> consumer) {
@@ -81,11 +96,12 @@ public class InventoryHelper {
         return handleQuickMove(start, false, stack, i, j, b, function);
     }
 
-    private static class EquipmentSlot extends Slot {
+    public static class ExtendedSlot extends Slot {
         
         private final boolean restrictedToEquipment;
+        public boolean isEnabled = true;
         
-        private EquipmentSlot(Inventory inventory, int index, int x, int y, boolean restrictedToEquipment) {
+        private ExtendedSlot(Inventory inventory, int index, int x, int y, boolean restrictedToEquipment) {
             super(inventory, index, x, y);
             this.restrictedToEquipment = restrictedToEquipment;
         }
@@ -93,6 +109,48 @@ public class InventoryHelper {
         @Override
         public boolean canInsert(ItemStack stack) {
             return !restrictedToEquipment || stack.isDamageable();
+        }
+        
+        @Override
+        public boolean isEnabled() {
+            return isEnabled;
+        }
+    }
+
+    public static class ShulkerSlot extends Slot {
+        
+        private boolean isEnabled;
+        private ItemStack shulkerBox;
+        private int index;
+
+        private ShulkerSlot(Inventory inventory, int index, int x, int y) {
+            super(inventory, index, x, y);
+        }
+        
+        public void enable(ItemStack shulkerBox, int index) {
+            isEnabled = true;
+            this.shulkerBox = shulkerBox;
+            this.index = index;
+        }
+        
+        public void disable() {
+            isEnabled = false;
+        }
+        
+        @Override
+        public void markDirty() {
+            if (!isEnabled) return;
+            ContainerComponent component = shulkerBox.get(DataComponentTypes.CONTAINER);
+            if (component == null) return;
+            DefaultedList<ItemStack> stacks = DefaultedList.ofSize(27, ItemStack.EMPTY);
+            component.copyTo(stacks);
+            stacks.set(index, this.getStack());
+            shulkerBox.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(stacks));
+        }
+        
+        @Override
+        public boolean isEnabled() {
+            return isEnabled;
         }
     }
     

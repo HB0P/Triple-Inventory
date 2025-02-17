@@ -19,6 +19,7 @@ loom {
             sourceSet sourceSets.client
         }
     }
+    accessWidenerPath = file("src/main/resources/tripleinventory.accesswidener")
 }
 
 repositories {

@@ -8,6 +8,7 @@
     "M_CreativeInventoryScreen",
     "M_HandledScreen",
     "M_InGameHud",
+    "M_InventoryScreen",
     "M_LoomScreen",
     "M_MinecraftClient",
     "M_Mouse",

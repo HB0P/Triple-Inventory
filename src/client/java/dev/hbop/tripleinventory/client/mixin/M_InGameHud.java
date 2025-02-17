@@ -2,6 +2,7 @@ package dev.hbop.tripleinventory.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hbop.tripleinventory.TripleInventory;
+import dev.hbop.tripleinventory.client.ClientSlotData;
 import dev.hbop.tripleinventory.client.TripleInventoryClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -29,16 +31,16 @@ public abstract class M_InGameHud {
     @Shadow @Nullable protected abstract PlayerEntity getCameraPlayer();
 
     @Shadow @Final private static Identifier HOTBAR_TEXTURE;
-
     @Shadow @Final private static Identifier HOTBAR_SELECTION_TEXTURE;
+    @Unique private static final Identifier PREVIOUS_HOTBAR_SELECTION_TEXTURE = TripleInventory.identifier("hud/previous_hotbar_selection");
 
-    // render the tools hotbar
+    // render the extended hotbar
     @Inject(
             method = "renderHotbar",
             at = @At("TAIL")
     )
     private void renderHotbar(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        if (!TripleInventoryClient.CONFIG.showToolHotbar()) return;
+        if (!TripleInventoryClient.CONFIG.showExtendedHotbar()) return;
         
         PlayerEntity player = this.getCameraPlayer();
         assert player != null;
@@ -52,6 +54,22 @@ public abstract class M_InGameHud {
         context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 + 95, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
         context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 + 76 + 20 * size, context.getScaledWindowHeight() - 22, 21, 22);
 
+        // previous selected slot
+        if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot() && TripleInventoryClient.CONFIG.showPreviousSelectedSlotIndicator()) {
+            int prevSelectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
+            int x;
+            if (prevSelectedSlot <= 8) {
+                x = context.getScaledWindowWidth() / 2 - 92 + prevSelectedSlot * 20;
+            }
+            else if (prevSelectedSlot <= 49) {
+                x = context.getScaledWindowWidth() / 2 - 118 - (prevSelectedSlot - 41) * 20;
+            }
+            else {
+                x = context.getScaledWindowWidth() / 2 + 94 + (prevSelectedSlot - 50) * 20;
+            }
+            context.drawGuiTexture(RenderLayer::getGuiTextured, PREVIOUS_HOTBAR_SELECTION_TEXTURE, x, context.getScaledWindowHeight() - 23, 24, 23);
+        }
+        
         // selected slot
         int selectedSlot = player.getInventory().selectedSlot;
         if (selectedSlot >= 41 && selectedSlot <= 58) {
@@ -80,7 +98,7 @@ public abstract class M_InGameHud {
         }
     }
     
-    // shift the offhand when showing tool hotbar
+    // shift the offhand when showing extended hotbar
     @Redirect(
             method = "renderHotbar",
             at = @At(
@@ -96,7 +114,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandLeft(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showToolHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
             context.drawGuiTexture(renderLayers, sprite, x - 6 - TripleInventory.extendedInventorySize() * 20, y, width, height);
         }
         else {
@@ -119,7 +137,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandRight(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showToolHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
             context.drawGuiTexture(renderLayers, sprite, x + 6 + TripleInventory.extendedInventorySize() * 20, y, width, height);
         }
         else {
@@ -136,7 +154,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemLeft(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showToolHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
             renderHotbarItem(context, x - 6 - TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
         }
         else {
@@ -153,7 +171,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemRight(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showToolHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
             renderHotbarItem(context, x + 6 + TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
         }
         else {

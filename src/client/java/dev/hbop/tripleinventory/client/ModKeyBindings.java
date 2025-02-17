@@ -17,17 +17,17 @@ public class ModKeyBindings {
             "key.tripleinventory.select_weapon",
             InputUtil.Type.KEYSYM,
             GLFW.GLFW_KEY_GRAVE_ACCENT,
-            "key.categories.tripleinventory.tool_hotbar"
+            "key.categories.tripleinventory.extended_hotbar"
     ));
-    public static final KeyBinding[] toolHotbarKeys = new KeyBinding[18];
+    public static final KeyBinding[] extendedHotbarKeys = new KeyBinding[18];
     
     public static void registerKeyBindings() {
         for (int i = 0; i < 18; i++) {
-            toolHotbarKeys[i] = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                    "key.tripleinventory.tool_hotbar." + (i + 1),
+            extendedHotbarKeys[i] = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                    "key.tripleinventory.extended_hotbar." + (i + 1),
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_UNKNOWN,
-                    "key.categories.tripleinventory.tool_hotbar"
+                    "key.categories.tripleinventory.extended_hotbar"
             ));
         }
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -40,15 +40,14 @@ public class ModKeyBindings {
                         || stack.isOf(Items.MACE)
                         || stack.isOf(Items.TRIDENT)
                 );
-                if (i != -1) {
+                if (i != -1 && player.getInventory().selectedSlot != i) {
                     ClientSlotData.INSTANCE.set(player.getInventory().selectedSlot, false);
                     player.getInventory().selectedSlot = i;
                 }
             }
             for (int i = 0; i < 18; i++) {
-                while (toolHotbarKeys[i].wasPressed()) {
+                while (extendedHotbarKeys[i].wasPressed()) {
                     if ((i % 9) >= TripleInventory.extendedInventorySize()) break;
-                    ClientSlotData.INSTANCE.set(player.getInventory().selectedSlot, false);
                     player.getInventory().selectedSlot = 41 + i;
                 }
             }

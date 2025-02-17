@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
 @Mixin(ScreenHandler.class)
 public abstract class M_ScreenHandler {
-    
+
     // allow swapping items to extended inventory
     @ModifyConstant(
             method = "internalOnSlotClick",
