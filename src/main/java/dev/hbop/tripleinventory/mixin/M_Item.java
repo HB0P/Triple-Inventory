@@ -34,7 +34,7 @@ public class M_Item {
             int i = 0;
             for (Slot screenSlot : player.currentScreenHandler.slots) {
                 if (screenSlot instanceof InventoryHelper.ShulkerSlot shulkerSlot) {
-                    shulkerSlot.enable(stack, i);
+                    shulkerSlot.enable(stack, i, slot);
                     shulkerSlot.setStack(stacks.get(i));
                     i++;
                 }

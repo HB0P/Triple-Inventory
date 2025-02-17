@@ -75,14 +75,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         }
         
         // show shulker preview background
-        boolean drawShulkerSlots = false;
-        for (Slot slot : handler.slots) {
-            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot && shulkerSlot.isEnabled()) {
-                drawShulkerSlots = true;
-                break;
-            }
-        }
-        if (drawShulkerSlots) {
+        if (showShulkerPreview()) {
             context.drawTexture(RenderLayer::getGuiTextured, SHULKER_PREVIEW_TEXTURE, this.x + shulkerPreviewShift, this.y + height - 4, 0, 0, 176, 65, 256, 256);
         }
     }
@@ -94,10 +87,16 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             cancellable = true
     )
     private void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (!showExtendedInventory()) return;
-        int size = TripleInventory.extendedInventorySize();
-        if (mouseX > (left - 4 - size * 18) && mouseX < left + backgroundWidth + 4 + size * 18 && mouseY > top + backgroundHeight - 90 && mouseY < top + backgroundHeight) {
-            cir.setReturnValue(false);
+        if (showExtendedInventory()) {
+            int size = TripleInventory.extendedInventorySize();
+            if (mouseX > (left - 4 - size * 18) && mouseX < left + backgroundWidth + 4 + size * 18 && mouseY > top + backgroundHeight - 90 && mouseY < top + backgroundHeight) {
+                cir.setReturnValue(false);
+            }
+        }
+        if (showShulkerPreview()) {
+            if (mouseX > left && mouseX < left + backgroundWidth && mouseY > top + backgroundHeight && mouseY < top + backgroundHeight + 58) {
+                cir.setReturnValue(false);
+            }
         }
     }
     
@@ -145,5 +144,15 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             return !recipeBookScreen.recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
         }
         return true;
+    }
+    
+    @Unique
+    private boolean showShulkerPreview() {
+        for (Slot slot : handler.slots) {
+            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot && shulkerSlot.isEnabled()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
 
@@ -122,15 +123,17 @@ public class InventoryHelper {
         private boolean isEnabled;
         private ItemStack shulkerBox;
         private int index;
+        private Slot tiedSlot;
 
         private ShulkerSlot(Inventory inventory, int index, int x, int y) {
             super(inventory, index, x, y);
         }
         
-        public void enable(ItemStack shulkerBox, int index) {
+        public void enable(ItemStack shulkerBox, int index, Slot tiedSlot) {
             isEnabled = true;
             this.shulkerBox = shulkerBox;
             this.index = index;
+            this.tiedSlot = tiedSlot;
         }
         
         public void disable() {
@@ -150,7 +153,16 @@ public class InventoryHelper {
         
         @Override
         public boolean isEnabled() {
-            return isEnabled;
+            if (isEnabled) {
+                if (tiedSlot.getStack() == shulkerBox) return true;
+                isEnabled = false;
+            }
+            return false;
+        }
+        
+        @Override
+        public boolean canInsert(ItemStack stack) {
+            return !stack.isIn(ItemTags.SHULKER_BOXES);
         }
     }
     
