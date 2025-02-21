@@ -6,16 +6,46 @@ import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.collection.DefaultedList;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class InventoryHelper {
-
+    
+    private static final Map<Item, Integer> SHULKER_COLORS = new HashMap<>();
+    
+    static {
+        SHULKER_COLORS.put(Items.SHULKER_BOX, 0x976997);
+        SHULKER_COLORS.putAll(Map.of(
+                Items.WHITE_SHULKER_BOX, 0xF9FFFE,
+                Items.ORANGE_SHULKER_BOX, 0xF9801D,
+                Items.MAGENTA_SHULKER_BOX, 0xC74EBD,
+                Items.LIGHT_BLUE_SHULKER_BOX, 0x3AB3DA,
+                Items.YELLOW_SHULKER_BOX, 0xFED83D,
+                Items.LIME_SHULKER_BOX, 0x80C71F,
+                Items.PINK_SHULKER_BOX, 0xF38BAA,
+                Items.GRAY_SHULKER_BOX, 0x474F52
+        ));
+        SHULKER_COLORS.putAll(Map.of(
+                Items.LIGHT_GRAY_SHULKER_BOX, 0x9D9D97,
+                Items.CYAN_SHULKER_BOX, 0x169C9C,
+                Items.PURPLE_SHULKER_BOX, 0x8932B8,
+                Items.BLUE_SHULKER_BOX, 0x3C44AA,
+                Items.BROWN_SHULKER_BOX, 0x835432,
+                Items.GREEN_SHULKER_BOX, 0x5E7C16,
+                Items.RED_SHULKER_BOX, 0xB02E26,
+                Items.BLACK_SHULKER_BOX, 0x1D1D21
+        ));
+    }
+    
     public static boolean isSlotEnabled(int index) {
         if (index < 41) return true;
         return (index - 41) % 9 < TripleInventory.extendedInventorySize();
@@ -124,6 +154,7 @@ public class InventoryHelper {
         private ItemStack shulkerBox;
         private int index;
         private Slot tiedSlot;
+        private int color;
 
         private ShulkerSlot(Inventory inventory, int index, int x, int y) {
             super(inventory, index, x, y);
@@ -134,10 +165,20 @@ public class InventoryHelper {
             this.shulkerBox = shulkerBox;
             this.index = index;
             this.tiedSlot = tiedSlot;
+            for (Item item : SHULKER_COLORS.keySet()) {
+                if (shulkerBox.isOf(item)) {
+                    color = SHULKER_COLORS.get(item);
+                    break;
+                }
+            }
         }
         
         public void disable() {
             isEnabled = false;
+        }
+        
+        public int getShulkerBoxColor() {
+            return color;
         }
         
         @Override

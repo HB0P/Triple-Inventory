@@ -77,6 +77,17 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         // show shulker preview background
         if (showShulkerPreview()) {
             context.drawTexture(RenderLayer::getGuiTextured, SHULKER_PREVIEW_TEXTURE, this.x + shulkerPreviewShift, this.y + height - 4, 0, 0, 176, 65, 256, 256);
+            for (int x = 0; x < 9; x++) {
+                for (int y = 0; y < 3; y++) {
+                    context.fill(
+                            this.x + shulkerPreviewShift + 8 + x * 18,
+                            this.y + height - 2 + y * 18,
+                            this.x + shulkerPreviewShift + 8 + x * 18 + 16,
+                            this.y + height -2 + y * 18 + 16,
+                            getShulkerPreviewColor() | 0x80000000
+                    );
+                }
+            }
         }
     }
     
@@ -154,5 +165,15 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             }
         }
         return false;
+    }
+
+    @Unique
+    private int getShulkerPreviewColor() {
+        for (Slot slot : handler.slots) {
+            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot) {
+                return shulkerSlot.getShulkerBoxColor();
+            }
+        }
+        return 0;
     }
 }
