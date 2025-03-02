@@ -4,6 +4,7 @@ import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ModKeyBindings;
 import dev.hbop.tripleinventory.client.TripleInventoryClient;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
+import dev.hbop.tripleinventory.helper.ItemInventorySlot;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.*;
@@ -143,7 +144,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     )
     private void close(CallbackInfo ci) {
         for (Slot slot : handler.slots) {
-            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot) {
+            if (slot instanceof ItemInventorySlot shulkerSlot) {
                 shulkerSlot.disable();
             }
         }
@@ -160,7 +161,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     @Unique
     private boolean showShulkerPreview() {
         for (Slot slot : handler.slots) {
-            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot && shulkerSlot.isEnabled()) {
+            if (slot instanceof ItemInventorySlot shulkerSlot && shulkerSlot.isEnabled()) {
                 return true;
             }
         }
@@ -170,7 +171,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     @Unique
     private int getShulkerPreviewColor() {
         for (Slot slot : handler.slots) {
-            if (slot instanceof InventoryHelper.ShulkerSlot shulkerSlot) {
+            if (slot instanceof ItemInventorySlot shulkerSlot) {
                 return shulkerSlot.getShulkerBoxColor();
             }
         }

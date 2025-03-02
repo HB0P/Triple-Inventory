@@ -1,50 +1,16 @@
 package dev.hbop.tripleinventory.helper;
 
 import dev.hbop.tripleinventory.TripleInventory;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.collection.DefaultedList;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class InventoryHelper {
-    
-    private static final Map<Item, Integer> SHULKER_COLORS = new HashMap<>();
-    
-    static {
-        SHULKER_COLORS.put(Items.SHULKER_BOX, 0x976997);
-        SHULKER_COLORS.putAll(Map.of(
-                Items.WHITE_SHULKER_BOX, 0xF9FFFE,
-                Items.ORANGE_SHULKER_BOX, 0xF9801D,
-                Items.MAGENTA_SHULKER_BOX, 0xC74EBD,
-                Items.LIGHT_BLUE_SHULKER_BOX, 0x3AB3DA,
-                Items.YELLOW_SHULKER_BOX, 0xFED83D,
-                Items.LIME_SHULKER_BOX, 0x80C71F,
-                Items.PINK_SHULKER_BOX, 0xF38BAA,
-                Items.GRAY_SHULKER_BOX, 0x474F52
-        ));
-        SHULKER_COLORS.putAll(Map.of(
-                Items.LIGHT_GRAY_SHULKER_BOX, 0x9D9D97,
-                Items.CYAN_SHULKER_BOX, 0x169C9C,
-                Items.PURPLE_SHULKER_BOX, 0x8932B8,
-                Items.BLUE_SHULKER_BOX, 0x3C44AA,
-                Items.BROWN_SHULKER_BOX, 0x835432,
-                Items.GREEN_SHULKER_BOX, 0x5E7C16,
-                Items.RED_SHULKER_BOX, 0xB02E26,
-                Items.BLACK_SHULKER_BOX, 0x1D1D21
-        ));
-    }
     
     public static boolean isSlotEnabled(int index) {
         if (index < 41) return true;
@@ -73,7 +39,7 @@ public class InventoryHelper {
         return -1;
     }
     
-    public static void addExtraSlots(PlayerInventory inventory, int width, int height, int shulkerPreviewShift, Consumer<Slot> consumer) {
+    public static void addExtraSlots(PlayerInventory inventory, int width, int height, int subInventoryShift, Consumer<Slot> consumer) {
         int size = TripleInventory.extendedInventorySize();
         // left hotbar
         for (int i = 0; i < size; i++) {
@@ -95,11 +61,11 @@ public class InventoryHelper {
                 consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
             }
         }
-        // shulker
-        SimpleInventory shulkerInventory = new SimpleInventory(27);
+        // internal inventory
+        SimpleInventory internalInventory = new SimpleInventory(27);
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 9; x++) {
-                consumer.accept(new ShulkerSlot(shulkerInventory, y * 9 + x, 8 + x * 18 + shulkerPreviewShift, height - 2 + y * 18));
+                consumer.accept(new ItemInventorySlot(internalInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height - 2 + y * 18));
             }
         }
     }
@@ -145,65 +111,6 @@ public class InventoryHelper {
         @Override
         public boolean isEnabled() {
             return isEnabled;
-        }
-    }
-
-    public static class ShulkerSlot extends Slot {
-        
-        private boolean isEnabled;
-        private ItemStack shulkerBox;
-        private int index;
-        private Slot tiedSlot;
-        private int color;
-
-        private ShulkerSlot(Inventory inventory, int index, int x, int y) {
-            super(inventory, index, x, y);
-        }
-        
-        public void enable(ItemStack shulkerBox, int index, Slot tiedSlot) {
-            isEnabled = true;
-            this.shulkerBox = shulkerBox;
-            this.index = index;
-            this.tiedSlot = tiedSlot;
-            for (Item item : SHULKER_COLORS.keySet()) {
-                if (shulkerBox.isOf(item)) {
-                    color = SHULKER_COLORS.get(item);
-                    break;
-                }
-            }
-        }
-        
-        public void disable() {
-            isEnabled = false;
-        }
-        
-        public int getShulkerBoxColor() {
-            return color;
-        }
-        
-        @Override
-        public void markDirty() {
-            if (!isEnabled) return;
-            ContainerComponent component = shulkerBox.get(DataComponentTypes.CONTAINER);
-            if (component == null) return;
-            DefaultedList<ItemStack> stacks = DefaultedList.ofSize(27, ItemStack.EMPTY);
-            component.copyTo(stacks);
-            stacks.set(index, this.getStack());
-            shulkerBox.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(stacks));
-        }
-        
-        @Override
-        public boolean isEnabled() {
-            if (isEnabled) {
-                if (tiedSlot.getStack() == shulkerBox) return true;
-                isEnabled = false;
-            }
-            return false;
-        }
-        
-        @Override
-        public boolean canInsert(ItemStack stack) {
-            return !stack.isIn(ItemTags.SHULKER_BOXES);
         }
     }
     
