@@ -77,20 +77,15 @@ public class InventoryHelper {
     public static void addExtraSlots(PlayerInventory inventory, Consumer<Slot> consumer) {
         addExtraSlots(inventory, 176, 166, consumer);
     }
-    
-    public static boolean handleQuickMove(int start, boolean hasOffhand, ItemStack stack, int i, int j, boolean b, InsertItemFunction function) {
-        int offhand = hasOffhand ? 1 : 0;
+
+    public static boolean handleQuickMove(int start, ItemStack stack, int i, int j, boolean b, InsertItemFunction function) {
         boolean changed = function.apply(stack, i, j, b);
         if (i == start && j == start + 36 && !stack.isEmpty()) {
-            if (function.apply(stack, start + 36 + offhand, start + 36 + offhand + TripleInventory.extendedInventorySize() * 8, false)) {
+            if (function.apply(stack, start + 36, start + 36 + TripleInventory.extendedInventorySize() * 8, false)) {
                 changed = true;
             }
         }
         return changed;
-    }
-
-    public static boolean handleQuickMove(int start, ItemStack stack, int i, int j, boolean b, InsertItemFunction function) {
-        return handleQuickMove(start, false, stack, i, j, b, function);
     }
 
     public static class ExtendedSlot extends Slot {

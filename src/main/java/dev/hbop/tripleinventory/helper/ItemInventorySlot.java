@@ -90,6 +90,7 @@ public class ItemInventorySlot extends Slot {
 
     @Override
     public boolean canInsert(ItemStack stack) {
+        if (!isEnabled()) return false;
         return canInsert.test(stack);
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.collection.DefaultedList;
@@ -48,7 +49,8 @@ public class M_Item {
                                 stks.set(index, newStack);
                                 stack.set(DataComponentTypes.CONTAINER, ContainerComponent.fromStacks(stks));
                                 },
-                            newStack -> !stack.isIn(ItemTags.SHULKER_BOXES));
+                            newStack -> !newStack.isIn(ItemTags.SHULKER_BOXES)
+                    );
                     shulkerSlot.setStack(stacks.get(i));
                     i++;
                 }
@@ -57,6 +59,9 @@ public class M_Item {
         }
         
         else if (stack.isOf(Items.ENDER_CHEST)) {
+            if (player.currentScreenHandler instanceof GenericContainerScreenHandler containerScreenHandler) {
+                if (containerScreenHandler.getInventory() == player.getEnderChestInventory()) return;
+            }
             DefaultedList<ItemStack> stacks = player.getEnderChestInventory().getHeldStacks();
             int i = 0;
             for (Slot screenSlot : player.currentScreenHandler.slots) {

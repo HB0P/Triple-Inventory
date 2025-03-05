@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HopperScreenHandler.class)
 public abstract class M_HopperScreenHandler extends ScreenHandler {
-    
+
     protected M_HopperScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
     }
@@ -36,6 +36,6 @@ public abstract class M_HopperScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(HopperScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(5, stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(5, stack, i, j == this.slots.size() ? i + 36 : j, b, this::insertItem);
     }
 }

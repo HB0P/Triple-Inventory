@@ -41,6 +41,6 @@ public abstract class M_ShulkerBoxScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(ShulkerBoxScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(this.inventory.size(), stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(this.inventory.size(), stack, i, j == this.slots.size() ? i + 36 : j, b, this::insertItem);
     }
 }

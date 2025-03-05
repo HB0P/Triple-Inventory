@@ -40,7 +40,7 @@ public abstract class M_GenericContainerScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(GenericContainerScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(this.rows * 9, stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(this.rows * 9, stack, i, j == this.slots.size() ? i + 36 : j, b, this::insertItem);
     }
     
 }
