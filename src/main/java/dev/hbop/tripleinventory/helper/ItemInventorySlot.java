@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.text.Text;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +45,6 @@ public class ItemInventorySlot extends Slot {
                 Items.RED_SHULKER_BOX, 0xB02E26,
                 Items.BLACK_SHULKER_BOX, 0x1D1D21
         ));
-        COLORS.put(Items.ENDER_CHEST, 0xF6FABD);
     }
 
     ItemInventorySlot(Inventory inventory, int index, int x, int y) {
@@ -57,6 +57,7 @@ public class ItemInventorySlot extends Slot {
         this.tiedSlot = tiedSlot;
         this.onModify = onModify;
         this.canInsert = canInsert;
+        this.color = 0;
         for (Item item : COLORS.keySet()) {
             if (tiedStack.isOf(item)) {
                 color = COLORS.get(item);
@@ -70,7 +71,11 @@ public class ItemInventorySlot extends Slot {
     }
 
     public int getShulkerBoxColor() {
-        return color;
+        return color == 0 ? 0 : color | 0x80000000;
+    }
+    
+    public Text getTitle() {
+        return tiedStack.getName();
     }
 
     @Override

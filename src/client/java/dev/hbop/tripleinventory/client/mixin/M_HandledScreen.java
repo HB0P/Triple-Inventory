@@ -3,7 +3,6 @@ package dev.hbop.tripleinventory.client.mixin;
 import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ModKeyBindings;
 import dev.hbop.tripleinventory.client.TripleInventoryClient;
-import dev.hbop.tripleinventory.helper.InventoryHelper;
 import dev.hbop.tripleinventory.helper.ItemInventorySlot;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -34,12 +33,26 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     @Shadow @Final protected T handler;
     @Shadow @Nullable protected Slot focusedSlot;
     @Shadow protected abstract void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType);
-
+    
     @Unique private static final Identifier EXTENSION_TEXTURE = TripleInventory.identifier("textures/gui/container/inventory_extension.png");
     @Unique private static final Identifier SHULKER_PREVIEW_TEXTURE = TripleInventory.identifier("textures/gui/container/shulker_preview.png");
 
     protected M_HandledScreen(Text title) {
         super(title);
+    }
+
+    // add shulker preview title
+    @Inject(
+            method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;drawForeground(Lnet/minecraft/client/gui/DrawContext;II)V"
+            )
+    )
+    private void drawForeground(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (showShulkerPreview()) {
+            context.drawText(this.textRenderer, getShulkerPreviewTitle(), 8 + getShulkerPreviewShift(), getCorrectedHeight() - 4, 4210752, false);
+        }
     }
     
     // render extended slots area
@@ -49,15 +62,8 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     )
     private void renderBackground(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if ((Screen) this instanceof CreativeInventoryScreen) return;
-        
-        int height = this.backgroundHeight;
-        if ((Screen) this instanceof ShulkerBoxScreen) height--;
-        else if ((Screen) this instanceof GenericContainerScreen) height--;
-
-        int shulkerPreviewShift;
-        if ((Screen) this instanceof BeaconScreen) shulkerPreviewShift = 28;
-        else if ((Screen) this instanceof MerchantScreen) shulkerPreviewShift = 100;
-        else shulkerPreviewShift = 0;
+        int height = getCorrectedHeight();
+        int shulkerPreviewShift = getShulkerPreviewShift();
         
         // show extended inventory background
         if (showExtendedInventory()) {
@@ -77,15 +83,15 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         
         // show shulker preview background
         if (showShulkerPreview()) {
-            context.drawTexture(RenderLayer::getGuiTextured, SHULKER_PREVIEW_TEXTURE, this.x + shulkerPreviewShift, this.y + height - 4, 0, 0, 176, 65, 256, 256);
+            context.drawTexture(RenderLayer::getGuiTextured, SHULKER_PREVIEW_TEXTURE, this.x + shulkerPreviewShift, this.y + height - 4, 0, 0, 176, 71, 256, 256);
             for (int x = 0; x < 9; x++) {
                 for (int y = 0; y < 3; y++) {
                     context.fill(
                             this.x + shulkerPreviewShift + 8 + x * 18,
-                            this.y + height - 2 + y * 18,
+                            this.y + height + 7 + y * 18,
                             this.x + shulkerPreviewShift + 8 + x * 18 + 16,
-                            this.y + height -2 + y * 18 + 16,
-                            getShulkerPreviewColor() | 0x80000000
+                            this.y + height + 7 + y * 18 + 16,
+                            getShulkerPreviewColor()
                     );
                 }
             }
@@ -151,6 +157,20 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     }
     
     @Unique
+    private int getCorrectedHeight() {
+        if ((Screen) this instanceof ShulkerBoxScreen) return this.backgroundHeight - 1;
+        else if ((Screen) this instanceof GenericContainerScreen) return this.backgroundHeight - 1;
+        else return this.backgroundHeight;
+    }
+    
+    @Unique
+    private int getShulkerPreviewShift() {
+        if ((Screen) this instanceof BeaconScreen) return 28;
+        else if ((Screen) this instanceof MerchantScreen) return 100;
+        else return 0;
+    }
+    
+    @Unique
     private boolean showExtendedInventory() {
         if ((HandledScreen<?>)(Object)this instanceof RecipeBookScreen<?> recipeBookScreen) {
             return !recipeBookScreen.recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
@@ -176,5 +196,15 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             }
         }
         return 0;
+    }
+    
+    @Unique
+    private Text getShulkerPreviewTitle() {
+        for (Slot slot : handler.slots) {
+            if (slot instanceof ItemInventorySlot shulkerSlot) {
+                return shulkerSlot.getTitle();
+            }
+        }
+        return null;
     }
 }

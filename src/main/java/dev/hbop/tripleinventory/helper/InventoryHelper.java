@@ -65,7 +65,7 @@ public class InventoryHelper {
         SimpleInventory internalInventory = new SimpleInventory(27);
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 9; x++) {
-                consumer.accept(new ItemInventorySlot(internalInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height - 2 + y * 18));
+                consumer.accept(new ItemInventorySlot(internalInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height + 7 + y * 18));
             }
         }
     }
