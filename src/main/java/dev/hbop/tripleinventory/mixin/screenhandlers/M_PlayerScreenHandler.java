@@ -1,6 +1,7 @@
 package dev.hbop.tripleinventory.mixin.screenhandlers;
 
 import dev.hbop.tripleinventory.TripleInventory;
+import dev.hbop.tripleinventory.helper.InventoryArea;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -12,10 +13,9 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerScreenHandler.class)
@@ -46,6 +46,7 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
             ItemStack itemStack2 = slot2.getStack();
             itemStack = itemStack2.copy();
             EquipmentSlot equipmentSlot = player.getPreferredEquipmentSlot(itemStack);
+            // crafting output -> main, extended
             if (slot == 0) {
                 if (!this.insertItem(itemStack2, 9, 45, true)) {
                     if (!this.insertItem(itemStack2, 46, 46 + size * 8, true)) {
@@ -53,56 +54,65 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
                     }
                 }
                 slot2.onQuickTransfer(itemStack2, itemStack);
-            } else if (slot >= 1 && slot < 5) {
-                if (!this.insertItem(itemStack2, 9, 45, false)) {
-                    if (!this.insertItem(itemStack2, 46, 46 + size * 8, false)) {
-                        return ItemStack.EMPTY;
-                    }
+            }
+            // crafting input, armor -> main, extended
+            else if (slot >= 1 && slot < 9) {
+                if (!this.insertItemToWhole(size, itemStack2)) {
+                    return ItemStack.EMPTY;
                 }
-            } else if (slot >= 5 && slot < 9) {
-                if (!this.insertItem(itemStack2, 9, 45, false)) {
-                    if (!this.insertItem(itemStack2, 46, 46 + size * 8, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
-            } else if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !this.slots.get(8 - equipmentSlot.getEntitySlotId()).hasStack()) {
+            }
+            // anywhere -> armor
+            else if (equipmentSlot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR && !this.slots.get(8 - equipmentSlot.getEntitySlotId()).hasStack()) {
                 int i = 8 - equipmentSlot.getEntitySlotId();
                 if (!this.insertItem(itemStack2, i, i + 1, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasStack()) {
-                if (!this.insertItem(itemStack2, 45, 46, false)) {
+            } 
+            // anywhere -> offhand
+            else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasStack()) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.OFFHAND)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slot >= 9 && slot < 36) {
-                if (!this.insertItem(itemStack2, 36, 45, false)) {
+            } 
+            // main inventory -> hotbar
+            else if (slot >= 9 && slot < 36) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.MAIN_HOTBAR, InventoryArea.LEFT_HOTBAR, InventoryArea.RIGHT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slot >= 36 && slot < 45) {
-                if (!this.insertItem(itemStack2, 9, 36, false)) {
+            } 
+            // main hotbar -> inventory
+            else if (slot >= 36 && slot < 45) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.MAIN_INVENTORY, InventoryArea.LEFT_INVENTORY, InventoryArea.RIGHT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
             }
+            // left hotbar -> inventory
             else if (slot >= 46 && slot < 46 + size) {
-                if (!this.insertItem(itemStack2, 46 + size * 2, 46 + size * 5, false)) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.LEFT_INVENTORY, InventoryArea.MAIN_INVENTORY, InventoryArea.RIGHT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slot >= 46 + size && slot < 46 + size * 2) {
-                if (!this.insertItem(itemStack2, 46 + size * 5, 46 + size * 8, false)) {
+            } 
+            // right hotbar -> inventory
+            else if (slot >= 46 + size && slot < 46 + size * 2) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.RIGHT_INVENTORY, InventoryArea.MAIN_INVENTORY, InventoryArea.LEFT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slot >= 46 + size * 2 && slot < 46 + size * 5) {
-                if (!this.insertItem(itemStack2, 46, 46 + size, false)) {
+            } 
+            // left inventory -> hotbar
+            else if (slot >= 46 + size * 2 && slot < 46 + size * 5) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.LEFT_HOTBAR, InventoryArea.MAIN_HOTBAR, InventoryArea.RIGHT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slot >= 46 + size * 5 && slot < 46 + size * 8) {
-                if (!this.insertItem(itemStack2, 46 + size, 46 + size * 2, false)) {
+            } 
+            // right inventory -> hotbar
+            else if (slot >= 46 + size * 5 && slot < 46 + size * 8) {
+                if (!this.insertItem(size, itemStack2, InventoryArea.RIGHT_HOTBAR, InventoryArea.MAIN_HOTBAR, InventoryArea.LEFT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!this.insertItem(itemStack2, 9, 45, false)) {
-                if (!this.insertItem(itemStack2, 46, 46 + size * 8, false)) {
-                    return ItemStack.EMPTY;
-                }
+            } 
+            // anywhere -> main, extended
+            else if (!this.insertItemToWhole(size, itemStack2)) {
+                return ItemStack.EMPTY;
             }
 
             if (itemStack2.isEmpty()) {
@@ -122,5 +132,27 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
         }
 
         return itemStack;
+    }
+    
+    @Unique
+    private boolean insertItem(int size, ItemStack stack, InventoryArea ... areas) {
+        for (InventoryArea area : areas) {
+            if (this.insertItem(stack, area.getStartIndex(size), area.getEndIndex(size), false)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Unique
+    private boolean insertItemToWhole(int size, ItemStack stack) {
+        return insertItem(size, stack, 
+                InventoryArea.MAIN_INVENTORY, 
+                InventoryArea.LEFT_INVENTORY, 
+                InventoryArea.RIGHT_INVENTORY,
+                InventoryArea.MAIN_HOTBAR,
+                InventoryArea.LEFT_HOTBAR,
+                InventoryArea.RIGHT_HOTBAR
+        );
     }
 }

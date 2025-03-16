@@ -172,10 +172,33 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     
     @Unique
     private boolean showExtendedInventory() {
-        if ((HandledScreen<?>)(Object)this instanceof RecipeBookScreen<?> recipeBookScreen) {
-            return !recipeBookScreen.recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
+        HandledScreen<?> screen = (HandledScreen<?>) (Object) this;
+        if (
+                screen instanceof AbstractFurnaceScreen<?>
+                || screen instanceof BeaconScreen
+                || screen instanceof BrewingStandScreen
+                || screen instanceof CartographyTableScreen
+                || screen instanceof CrafterScreen
+                || screen instanceof CraftingScreen
+                || screen instanceof EnchantmentScreen
+                || screen instanceof ForgingScreen<?>
+                || screen instanceof Generic3x3ContainerScreen
+                || screen instanceof GenericContainerScreen
+                || screen instanceof GrindstoneScreen
+                || screen instanceof HopperScreen
+                || screen instanceof HorseScreen
+                || screen instanceof InventoryScreen
+                || screen instanceof LoomScreen
+                || screen instanceof MerchantScreen
+                || screen instanceof ShulkerBoxScreen
+                || screen instanceof StonecutterScreen
+        ) {
+            if (screen instanceof RecipeBookScreen<?> recipeBookScreen) {
+                return !recipeBookScreen.recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
+            }
+            return true;
         }
-        return true;
+        return false;
     }
     
     @Unique
