@@ -27,7 +27,9 @@ public class TripleInventory implements ModInitializer {
     }
 
     public static int extendedInventorySize() {
-        return CONFIG.extendedInventorySize();
+        int size = CONFIG.extendedInventorySize();
+        if (size < 0 || size > 9) return 0;
+        return size;
     }
 
     public static Identifier identifier(String id) {

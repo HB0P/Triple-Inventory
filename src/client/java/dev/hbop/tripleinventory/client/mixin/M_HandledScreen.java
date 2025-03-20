@@ -66,8 +66,8 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         int shulkerPreviewShift = getShulkerPreviewShift();
         
         // show extended inventory background
-        if (showExtendedInventory()) {
-            int size = TripleInventory.extendedInventorySize();
+        int size = TripleInventory.extendedInventorySize();
+        if (showExtendedInventory() && size > 0) {
             context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 4 - size * 18, this.y + height - 90, 0, 0, 25, 90, 256, 256);
             for (int i = 0; i < size - 2; i++) {
                 context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 33 - i * 18, this.y + height - 90, 25, 0, 18, 90, 256, 256);
@@ -105,8 +105,8 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             cancellable = true
     )
     private void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
-        if (showExtendedInventory()) {
-            int size = TripleInventory.extendedInventorySize();
+        int size = TripleInventory.extendedInventorySize();
+        if (showExtendedInventory() && size > 0) {
             if (mouseX > (left - 4 - size * 18) && mouseX < left + backgroundWidth + 4 + size * 18 && mouseY > top + backgroundHeight - 90 && mouseY < top + backgroundHeight) {
                 cir.setReturnValue(false);
             }

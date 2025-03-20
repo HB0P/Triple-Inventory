@@ -23,8 +23,9 @@ public abstract class M_RecipeBookWidget {
             )
     )
     private int leftOffset0(int constant) {
-        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook()) return constant;
-        return constant + 4 + TripleInventory.extendedInventorySize() * 18;
+        int size = TripleInventory.extendedInventorySize();
+        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook() || size == 0) return constant;
+        return constant + 4 + size * 18;
     }
     
     @ModifyConstant(
@@ -35,8 +36,9 @@ public abstract class M_RecipeBookWidget {
             )
     )
     private int leftOffset1(int constant) {
-        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook()) return constant;
-        return constant + 6 + TripleInventory.extendedInventorySize() * 18;
+        int size = TripleInventory.extendedInventorySize();
+        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook() || size > 0) return constant;
+        return constant + 6 + size * 18;
     }
     
     /**

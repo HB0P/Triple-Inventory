@@ -23,7 +23,7 @@ public abstract class M_Mouse {
         ClientSlotData.INSTANCE.reset();
         int size = TripleInventory.extendedInventorySize();
         
-        if (TripleInventoryClient.CONFIG.scrollToExtendedHotbar()) {
+        if (TripleInventoryClient.CONFIG.scrollToExtendedHotbar() && size > 0) {
             int slotPosition;
             if (selectedSlot >= 0 && selectedSlot <= 8) {
                 slotPosition = selectedSlot + size;

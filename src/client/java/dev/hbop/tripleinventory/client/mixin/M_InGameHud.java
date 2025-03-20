@@ -48,12 +48,14 @@ public abstract class M_InGameHud {
         // left and right hotbar
         RenderSystem.enableBlend();
         int size = TripleInventory.extendedInventorySize();
-        context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 - 97 - 20 * size, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 - 116, context.getScaledWindowHeight() - 22, 21, 22);
-        
-        context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 + 95, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 + 76 + 20 * size, context.getScaledWindowHeight() - 22, 21, 22);
+        if (size > 0) {
+            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 - 97 - 20 * size, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
+            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 - 116, context.getScaledWindowHeight() - 22, 21, 22);
 
+            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 + 95, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
+            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 + 76 + 20 * size, context.getScaledWindowHeight() - 22, 21, 22);
+        }
+        
         // previous selected slot
         if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot() && TripleInventoryClient.CONFIG.showPreviousSelectedSlotIndicator()) {
             int prevSelectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
@@ -114,7 +116,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandLeft(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
             context.drawGuiTexture(renderLayers, sprite, x - 6 - TripleInventory.extendedInventorySize() * 20, y, width, height);
         }
         else {
@@ -137,7 +139,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandRight(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
             context.drawGuiTexture(renderLayers, sprite, x + 6 + TripleInventory.extendedInventorySize() * 20, y, width, height);
         }
         else {
@@ -154,7 +156,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemLeft(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
             renderHotbarItem(context, x - 6 - TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
         }
         else {
@@ -171,7 +173,7 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemRight(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar()) {
+        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
             renderHotbarItem(context, x + 6 + TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
         }
         else {
