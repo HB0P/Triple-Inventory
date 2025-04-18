@@ -23,6 +23,7 @@
 	"text.config.tripleinventory-client.title": "Triple Inventory",
 	"text.config.tripleinventory-client.section.visuals": "Visuals",
 	"text.config.tripleinventory-client.section.hotbarNavigation": "Hotbar Navigation",
+	"text.config.tripleinventory-client.section.shulkerPreview": "Shulker Preview",
 	
 	"text.config.tripleinventory-client.option.showExtendedHotbar": "Show Extended Hotbar",
 	"text.config.tripleinventory-client.option.showPreviousSelectedSlotIndicator": "Show Previous Selected Slot Indicator",
@@ -40,5 +41,20 @@
 	"text.config.tripleinventory-client.option.autoSelectTools.tooltip": "Automatically select the best tool in the hotbar when mining",
 	"text.config.tripleinventory-client.option.autoReturnOnUse.tooltip": "Automatically return to the last manually selected slot when using an item",
 	"text.config.tripleinventory-client.option.autoReturnAfterCooldown.tooltip": "Automatically return to the last manually selected slot after a cooldown",
-	"text.config.tripleinventory-client.option.autoReturnCooldown.tooltip": "The number of ticks after which to return to the last selected slot"
+	"text.config.tripleinventory-client.option.autoReturnCooldown.tooltip": "The number of ticks after which to return to the last selected slot",
+	
+	"text.config.tripleinventory-client.option.colorShulkerBackground": "Colour Shulker Background",
+	"text.config.tripleinventory-client.option.shulkerPosition": "Shulker Preview Position",
+	"text.config.tripleinventory-client.enum.shulkerPosition.top_left": "Top Left",
+	"text.config.tripleinventory-client.enum.shulkerPosition.top_middle": "Top Middle",
+	"text.config.tripleinventory-client.enum.shulkerPosition.top_right": "Top Right",
+	"text.config.tripleinventory-client.enum.shulkerPosition.top_fill": "Top Fill",
+	"text.config.tripleinventory-client.enum.shulkerPosition.bottom_left": "Bottom Left",
+	"text.config.tripleinventory-client.enum.shulkerPosition.bottom_middle": "Bottom Middle",
+	"text.config.tripleinventory-client.enum.shulkerPosition.bottom_right": "Bottom Right",
+	"text.config.tripleinventory-client.enum.shulkerPosition.bottom_fill": "Bottom Fill",
+	"text.config.tripleinventory-client.enum.shulkerPosition.left_top": "Left Top",
+	"text.config.tripleinventory-client.enum.shulkerPosition.left_bottom": "Left Bottom",
+	"text.config.tripleinventory-client.enum.shulkerPosition.right_top": "Right Top",
+	"text.config.tripleinventory-client.enum.shulkerPosition.right_bottom": "Right Bottom"
 }

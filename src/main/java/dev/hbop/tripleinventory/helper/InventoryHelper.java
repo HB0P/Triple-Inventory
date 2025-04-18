@@ -61,11 +61,11 @@ public class InventoryHelper {
                 consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
             }
         }
-        // internal inventory
-        SimpleInventory internalInventory = new SimpleInventory(27);
+        // shulker inventory
+        SimpleInventory shulkerInventory = new SimpleInventory(27);
         for (int y = 0; y < 3; y++) {
             for (int x = 0; x < 9; x++) {
-                consumer.accept(new ItemInventorySlot(internalInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height + 7 + y * 18));
+                consumer.accept(new ItemInventorySlot(shulkerInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height + 7 + y * 18));
             }
         }
     }
