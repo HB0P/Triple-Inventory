@@ -1,7 +1,7 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import dev.hbop.tripleinventory.TripleInventory;
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -13,7 +13,9 @@ import org.spongepowered.asm.mixin.injection.ModifyConstant;
 public abstract class M_RecipeBookWidget {
 
     @Shadow private int leftOffset;
-    
+
+    @Shadow protected MinecraftClient client;
+
     // move recipe book to give space for extended slots
     @ModifyConstant(
             method = "reset",
@@ -23,8 +25,8 @@ public abstract class M_RecipeBookWidget {
             )
     )
     private int leftOffset0(int constant) {
-        int size = TripleInventory.extendedInventorySize();
-        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook() || size == 0) return constant;
+        int size = this.client.world.getExtendedInventorySize();
+        if (!ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook || size == 0) return constant;
         return constant + 4 + size * 18;
     }
     
@@ -36,8 +38,8 @@ public abstract class M_RecipeBookWidget {
             )
     )
     private int leftOffset1(int constant) {
-        int size = TripleInventory.extendedInventorySize();
-        if (!TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook() || size > 0) return constant;
+        int size = this.client.world.getExtendedInventorySize();
+        if (!ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook || size > 0) return constant;
         return constant + 6 + size * 18;
     }
     

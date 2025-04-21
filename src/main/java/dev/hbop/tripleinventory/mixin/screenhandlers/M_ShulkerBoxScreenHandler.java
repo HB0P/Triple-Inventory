@@ -7,10 +7,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.ShulkerBoxScreenHandler;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -20,7 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class M_ShulkerBoxScreenHandler extends ScreenHandler {
 
     @Shadow @Final private Inventory inventory;
-
+    @Unique private World world;
+    
     protected M_ShulkerBoxScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
     }
@@ -30,6 +33,7 @@ public abstract class M_ShulkerBoxScreenHandler extends ScreenHandler {
             at = @At("TAIL")
     )
     private void init(int syncId, PlayerInventory playerInventory, Inventory inventory, CallbackInfo ci) {
+        this.world = playerInventory.player.getWorld();
         InventoryHelper.addExtraSlots(playerInventory, slot -> this.addSlot(slot));
     }
 
@@ -41,6 +45,6 @@ public abstract class M_ShulkerBoxScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(ShulkerBoxScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(this.inventory.size(), stack, i, j == this.slots.size() ? i + 36 : j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(this.inventory.size(), stack, i, j == this.slots.size() ? i + 36 : j, b, this::insertItem, this.world);
     }
 }

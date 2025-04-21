@@ -1,6 +1,6 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.RecipeBookScreen;
@@ -50,7 +50,7 @@ public abstract class M_RecipeBookScreen<T extends AbstractRecipeScreenHandler> 
     
     @Unique
     private void updateExtendedSlots() {
-        boolean showExtendedInventory = !recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
+        boolean showExtendedInventory = !recipeBook.isOpen() || ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook;
         for (Slot slot : this.handler.slots) {
             if (slot instanceof InventoryHelper.ExtendedSlot extendedSlot) {
                 extendedSlot.isEnabled = showExtendedInventory;

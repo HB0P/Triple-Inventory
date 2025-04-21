@@ -1,16 +1,20 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import dev.hbop.tripleinventory.TripleInventory;
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
 import dev.hbop.tripleinventory.client.ClientSlotData;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.input.Scroller;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Mouse.class)
 public abstract class M_Mouse {
+
+    @Shadow @Final private MinecraftClient client;
 
     @Redirect(
             method = "onMouseScroll",
@@ -21,9 +25,9 @@ public abstract class M_Mouse {
     )
     private int scrollCycling(double amount, int selectedSlot, int hotbarSize) {
         ClientSlotData.INSTANCE.reset();
-        int size = TripleInventory.extendedInventorySize();
+        int size = this.client.world.getExtendedInventorySize();
         
-        if (TripleInventoryClient.CONFIG.scrollToExtendedHotbar() && size > 0) {
+        if (ClientConfig.HANDLER.instance().scrollToExtendedHotbar && ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
             int slotPosition;
             if (selectedSlot >= 0 && selectedSlot <= 8) {
                 slotPosition = selectedSlot + size;

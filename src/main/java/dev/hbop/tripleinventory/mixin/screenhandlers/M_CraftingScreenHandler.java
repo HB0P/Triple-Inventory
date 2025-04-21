@@ -8,14 +8,18 @@ import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CraftingScreenHandler.class)
 public abstract class M_CraftingScreenHandler extends AbstractRecipeScreenHandler {
-    
+
+    @Shadow @Final private PlayerEntity player;
+
     public M_CraftingScreenHandler(ScreenHandlerType<?> screenHandlerType, int i) {
         super(screenHandlerType, i);
     }
@@ -36,7 +40,7 @@ public abstract class M_CraftingScreenHandler extends AbstractRecipeScreenHandle
             )
     )
     private boolean quickMove(CraftingScreenHandler instance, ItemStack stack, int i, int j, boolean fromLast) {
-        if (fromLast) return InventoryHelper.handleQuickMove(10, stack, i, j, true, this::insertItem);
+        if (fromLast) return InventoryHelper.handleQuickMove(10, stack, i, j, true, this::insertItem, this.player.getWorld());
         else return this.insertItem(stack, i, j, false);
     }
     
@@ -52,7 +56,7 @@ public abstract class M_CraftingScreenHandler extends AbstractRecipeScreenHandle
     )
     private void quickMove(PlayerEntity player, int slot, CallbackInfoReturnable<ItemStack> cir) {
         if (slot >= 1 && slot < 10) {
-            if (!InventoryHelper.handleQuickMove(10, this.slots.get(slot).getStack(), 10, 46, false, this::insertItem)) {
+            if (!InventoryHelper.handleQuickMove(10, this.slots.get(slot).getStack(), 10, 46, false, this::insertItem, this.player.getWorld())) {
                 cir.setReturnValue(ItemStack.EMPTY);
             }
         }

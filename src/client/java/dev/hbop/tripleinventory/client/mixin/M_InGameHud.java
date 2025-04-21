@@ -1,9 +1,8 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ClientSlotData;
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderLayer;
@@ -40,14 +39,13 @@ public abstract class M_InGameHud {
             at = @At("TAIL")
     )
     private void renderHotbar(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        if (!TripleInventoryClient.CONFIG.showExtendedHotbar()) return;
+        if (!ClientConfig.HANDLER.instance().showExtendedHotbar) return;
         
         PlayerEntity player = this.getCameraPlayer();
         assert player != null;
         
         // left and right hotbar
-        RenderSystem.enableBlend();
-        int size = TripleInventory.extendedInventorySize();
+        int size = player.getWorld().getExtendedInventorySize();
         if (size > 0) {
             context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 - 97 - 20 * size, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
             context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 - 116, context.getScaledWindowHeight() - 22, 21, 22);
@@ -57,7 +55,7 @@ public abstract class M_InGameHud {
         }
         
         // previous selected slot
-        if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot() && TripleInventoryClient.CONFIG.showPreviousSelectedSlotIndicator()) {
+        if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot() && ClientConfig.HANDLER.instance().showPreviousSelectedSlotIndicator) {
             int prevSelectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
             int x;
             if (prevSelectedSlot <= 8) {
@@ -73,7 +71,7 @@ public abstract class M_InGameHud {
         }
         
         // selected slot
-        int selectedSlot = player.getInventory().selectedSlot;
+        int selectedSlot = player.getInventory().getSelectedSlot();
         if (selectedSlot >= 41 && selectedSlot <= 58) {
             int x;
             if (selectedSlot <= 49) {
@@ -86,8 +84,8 @@ public abstract class M_InGameHud {
         }
         
         // items
-        RenderSystem.disableBlend();
         for (int i = 0; i < 18; i++) {
+            if (i % 9 >= size) continue;
             ItemStack stack = player.getInventory().getStack(i + 41);
             int x;
             if (i < 9) {
@@ -116,8 +114,9 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandLeft(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
-            context.drawGuiTexture(renderLayers, sprite, x - 6 - TripleInventory.extendedInventorySize() * 20, y, width, height);
+        int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
+        if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
+            context.drawGuiTexture(renderLayers, sprite, x - 6 - size * 20, y, width, height);
         }
         else {
             context.drawGuiTexture(renderLayers, sprite, x, y, width, height);
@@ -139,8 +138,9 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandRight(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
-            context.drawGuiTexture(renderLayers, sprite, x + 6 + TripleInventory.extendedInventorySize() * 20, y, width, height);
+        int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
+        if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
+            context.drawGuiTexture(renderLayers, sprite, x + 6 + size * 20, y, width, height);
         }
         else {
             context.drawGuiTexture(renderLayers, sprite, x, y, width, height);
@@ -156,8 +156,9 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemLeft(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
-            renderHotbarItem(context, x - 6 - TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
+        int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
+        if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
+            renderHotbarItem(context, x - 6 - size * 20, y, tickCounter, player, stack, seed);
         }
         else {
             renderHotbarItem(context, x, y, tickCounter, player, stack, seed);
@@ -173,8 +174,9 @@ public abstract class M_InGameHud {
             )
     )
     private void renderOffhandItemRight(InGameHud hud, DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed) {
-        if (TripleInventoryClient.CONFIG.showExtendedHotbar() && TripleInventory.extendedInventorySize() > 0) {
-            renderHotbarItem(context, x + 6 + TripleInventory.extendedInventorySize() * 20, y, tickCounter, player, stack, seed);
+        int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
+        if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
+            renderHotbarItem(context, x + 6 + size * 20, y, tickCounter, player, stack, seed);
         }
         else {
             renderHotbarItem(context, x, y, tickCounter, player, stack, seed);

@@ -19,6 +19,9 @@
     ],
     "main": [
       "dev.hbop.tripleinventory.TripleInventory"
+    ],
+    "modmenu": [
+      "dev.hbop.tripleinventory.client.config.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -32,10 +35,16 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "owo-lib": ">=0.12.20+1.21.4"
+    "yet_another_config_lib_v3": ">=3.6.6+1.21.5-fabric"
   },
   "recommends": {
-    "modmenu": ">=13.0.0"
+    "modmenu": ">=14.0.0-rc.2"
   },
-  "accessWidener": "tripleinventory.accesswidener"
+  "accessWidener": "tripleinventory.accesswidener",
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/world/World": ["dev/hbop/tripleinventory/InventorySizeProvider"],
+      "net/minecraft/client/world/ClientWorld": ["dev/hbop/tripleinventory/client/InventorySizeSetter"]
+    }
+  }
 }

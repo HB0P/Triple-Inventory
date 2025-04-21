@@ -1,5 +1,7 @@
 package dev.hbop.tripleinventory.client;
 
+import dev.hbop.tripleinventory.client.config.ClientConfig;
+
 public class ClientSlotData {
     
     public static final ClientSlotData INSTANCE = new ClientSlotData();
@@ -29,8 +31,8 @@ public class ClientSlotData {
     public void set(int selectedSlot, boolean returnAfterCooldown) {
         if (!hasPreviouslySelectedSlot()) {
             previousSelectedSlot = selectedSlot;
-            if (returnAfterCooldown && TripleInventoryClient.CONFIG.autoReturnAfterCooldown()) {
-                selectedSlotResetCooldown = TripleInventoryClient.CONFIG.autoReturnCooldown();
+            if (returnAfterCooldown && ClientConfig.HANDLER.instance().autoReturnAfterCooldown) {
+                selectedSlotResetCooldown = ClientConfig.HANDLER.instance().autoReturnCooldown;
             }
         }
     }
@@ -43,7 +45,7 @@ public class ClientSlotData {
     
     public void boostSelectedSlotResetCooldown() {
         if (selectedSlotResetCooldown >= 0) {
-            selectedSlotResetCooldown = TripleInventoryClient.CONFIG.autoReturnCooldown();
+            selectedSlotResetCooldown = ClientConfig.HANDLER.instance().autoReturnCooldown;
         }
     }
 }

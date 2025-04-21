@@ -1,6 +1,5 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import dev.hbop.tripleinventory.TripleInventory;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
@@ -27,6 +26,6 @@ public abstract class M_CreativeInventoryScreen extends HandledScreen<CreativeIn
             )
     )
     private int getSlotsSize(DefaultedList<?> instance) {
-        return instance.size() - (TripleInventory.extendedInventorySize() * 8);
+        return instance.size() - (this.client.world.getExtendedInventorySize() * 8);
     }
 }

@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "M_ClientPlayerInteractionManager",
+    "M_ClientWorld",
     "M_CreativeInventoryScreen",
     "M_HandledScreen",
     "M_InGameHud",

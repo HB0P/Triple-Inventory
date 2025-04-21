@@ -11,7 +11,10 @@ import net.minecraft.screen.AbstractFurnaceScreenHandler;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -19,7 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractFurnaceScreenHandler.class)
 public abstract class M_AbstractFurnaceScreenHandler extends AbstractRecipeScreenHandler {
-    
+
+    @Shadow @Final protected World world;
+
     public M_AbstractFurnaceScreenHandler(ScreenHandlerType<?> screenHandlerType, int i) {
         super(screenHandlerType, i);
     }
@@ -40,6 +45,6 @@ public abstract class M_AbstractFurnaceScreenHandler extends AbstractRecipeScree
             )
     )
     private boolean quickMove(AbstractFurnaceScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(3, stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(3, stack, i, j, b, this::insertItem, this.world);
     }
 }

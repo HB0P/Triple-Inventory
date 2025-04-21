@@ -1,20 +1,20 @@
 package dev.hbop.tripleinventory.helper;
 
-import dev.hbop.tripleinventory.TripleInventory;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.World;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class InventoryHelper {
     
-    public static boolean isSlotEnabled(int index) {
+    public static boolean isSlotEnabled(int index, World world) {
         if (index < 41) return true;
-        return (index - 41) % 9 < TripleInventory.extendedInventorySize();
+        return (index - 41) % 9 < world.getExtendedInventorySize();
     }
     
     /**
@@ -40,25 +40,25 @@ public class InventoryHelper {
     }
     
     public static void addExtraSlots(PlayerInventory inventory, int width, int height, int subInventoryShift, Consumer<Slot> consumer) {
-        int size = TripleInventory.extendedInventorySize();
+        World world = inventory.player.getWorld();
         // left hotbar
-        for (int i = 0; i < size; i++) {
-            consumer.accept(new ExtendedSlot(inventory, i + 41, -14 - i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
+        for (int i = 0; i < 9; i++) {
+            consumer.accept(new ExtendedSlot(inventory, i + 41, -14 - i * 18, height - 24, world, i + 1));
         }
         // right hotbar
-        for (int i = 0; i < size; i++) {
-            consumer.accept(new ExtendedSlot(inventory, i + 50, width - 2 + i * 18, height - 24, TripleInventory.restrictExtendedHotbarToEquipment()));
+        for (int i = 0; i < 9; i++) {
+            consumer.accept(new ExtendedSlot(inventory, i + 50, width - 2 + i * 18, height - 24, world, i + 1));
         }
         // left inventory
         for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < size; x++) {
-                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 59, -14 - x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
+            for (int x = 0; x < 9; x++) {
+                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 59, -14 - x * 18, height - 82 + y * 18, world, x + 1));
             }
         }
         // right inventory
         for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < size; x++) {
-                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, TripleInventory.restrictExtendedInventoryToEquipment()));
+            for (int x = 0; x < 9; x++) {
+                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, world, x + 1));
             }
         }
         // shulker inventory
@@ -78,11 +78,14 @@ public class InventoryHelper {
         addExtraSlots(inventory, 176, 166, consumer);
     }
 
-    public static boolean handleQuickMove(int start, ItemStack stack, int i, int j, boolean b, InsertItemFunction function) {
+    public static boolean handleQuickMove(int start, ItemStack stack, int i, int j, boolean b, InsertItemFunction function, World world) {
         boolean changed = function.apply(stack, i, j, b);
         if (i == start && j == start + 36 && !stack.isEmpty()) {
-            if (function.apply(stack, start + 36, start + 36 + TripleInventory.extendedInventorySize() * 8, false)) {
-                changed = true;
+            for (int row = 0; row < 8; row++) {
+                if (function.apply(stack, start + 36 + (9 * row), start + 36 + (9 * row) + world.getExtendedInventorySize(), false)) {
+                    changed = true;
+                    break;
+                }
             }
         }
         return changed;
@@ -90,22 +93,19 @@ public class InventoryHelper {
 
     public static class ExtendedSlot extends Slot {
         
-        private final boolean restrictedToEquipment;
+        private final World world;
+        private final int maxSize;
         public boolean isEnabled = true;
         
-        private ExtendedSlot(Inventory inventory, int index, int x, int y, boolean restrictedToEquipment) {
+        private ExtendedSlot(Inventory inventory, int index, int x, int y, World world, int maxSize) {
             super(inventory, index, x, y);
-            this.restrictedToEquipment = restrictedToEquipment;
-        }
-        
-        @Override
-        public boolean canInsert(ItemStack stack) {
-            return !restrictedToEquipment || stack.isDamageable();
+            this.world = world;
+            this.maxSize = maxSize;
         }
         
         @Override
         public boolean isEnabled() {
-            return isEnabled;
+            return isEnabled && this.world.getExtendedInventorySize() >= maxSize;
         }
     }
     

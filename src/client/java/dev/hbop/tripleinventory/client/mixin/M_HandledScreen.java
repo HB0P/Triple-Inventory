@@ -2,14 +2,13 @@ package dev.hbop.tripleinventory.client.mixin;
 
 import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ModKeyBindings;
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
 import dev.hbop.tripleinventory.helper.ItemInventorySlot;
 import dev.hbop.tripleinventory.helper.ShulkerPosition;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.*;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
@@ -52,8 +51,8 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     )
     private void drawForeground(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (showShulkerPreview()) {
-            ShulkerPosition position = TripleInventoryClient.CONFIG.shulkerPosition();
-            int x = position.getX(0, this.backgroundWidth);
+            ShulkerPosition position = ClientConfig.HANDLER.instance().shulkerPosition;
+            int x = position.getX(0, this.backgroundWidth, this.client.world.getExtendedInventorySize());
             int y = position.getY(0, getCorrectedHeight());
             context.drawText(this.textRenderer, getShulkerPreviewTitle(), x + 8, y + 7, 4210752, false);
         }
@@ -69,7 +68,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         int height = getCorrectedHeight();
         
         // show extended inventory background
-        int size = TripleInventory.extendedInventorySize();
+        int size = this.client.world.getExtendedInventorySize();
         if (showExtendedInventory() && size > 0) {
             context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 4 - size * 18, this.y + height - 90, 0, 0, 25, 90, 256, 256);
             for (int i = 0; i < size - 2; i++) {
@@ -86,12 +85,12 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         
         // show shulker preview background
         if (showShulkerPreview()) {
-            ShulkerPosition position = TripleInventoryClient.CONFIG.shulkerPosition();
-            int x = position.getX(this.x, this.backgroundWidth);
+            ShulkerPosition position = ClientConfig.HANDLER.instance().shulkerPosition;
+            int x = position.getX(this.x, this.backgroundWidth, this.client.world.getExtendedInventorySize());
             int y = position.getY(this.y, height);
             context.drawTexture(
                     RenderLayer::getGuiTextured, 
-                    position.getTexture(this.backgroundWidth, height), 
+                    position.getTexture(this.backgroundWidth, height, this.client.world.getExtendedInventorySize()), 
                     x, y,
                     0, 0, 
                     176, 78, 
@@ -118,7 +117,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             cancellable = true
     )
     private void isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
-        int size = TripleInventory.extendedInventorySize();
+        int size = this.client.world.getExtendedInventorySize();
         if (showExtendedInventory() && size > 0) {
             if (mouseX > (left - 4 - size * 18) && mouseX < left + backgroundWidth + 4 + size * 18 && mouseY > top + backgroundHeight - 90 && mouseY < top + backgroundHeight) {
                 cir.setReturnValue(false);
@@ -140,9 +139,9 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     private void handleHotbarKeyPressed(int keyCode, int scanCode, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValue()) {
             if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null) {
+                int size = this.client.world.getExtendedInventorySize();
                 for (int i = 0; i < 18; i++) {
                     if (ModKeyBindings.extendedHotbarKeys[i].matchesKey(keyCode, scanCode)) {
-                        int size = TripleInventory.extendedInventorySize();
                         if ((i % 9) >= size) continue;
                         int slot = i < 9 ? i + 46 : i + 37 + size;
                         if (!this.focusedSlot.hasStack() || this.handler.getSlot(slot).canInsert(this.focusedSlot.getStack())) {
@@ -200,7 +199,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
                 || screen instanceof StonecutterScreen
         ) {
             if (screen instanceof RecipeBookScreen<?> recipeBookScreen) {
-                return !recipeBookScreen.recipeBook.isOpen() || TripleInventoryClient.CONFIG.showExtendedInventoryWithRecipeBook();
+                return !recipeBookScreen.recipeBook.isOpen() || ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook;
             }
             return true;
         }

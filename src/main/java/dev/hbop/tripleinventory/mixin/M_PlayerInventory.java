@@ -1,13 +1,15 @@
 package dev.hbop.tripleinventory.mixin;
 
-import com.google.common.collect.ImmutableList;
-import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventories;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.collection.DefaultedList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,85 +21,51 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.List;
-
 @Mixin(PlayerInventory.class)
 public abstract class M_PlayerInventory {
 
-    @Shadow @Final public DefaultedList<ItemStack> main;
-    @Shadow @Final public DefaultedList<ItemStack> armor;
-    @Shadow @Final public DefaultedList<ItemStack> offHand;
+    @Shadow @Final private DefaultedList<ItemStack> main;
+
     @Shadow @Final public PlayerEntity player;
-    @Shadow
-    private final List<DefaultedList<ItemStack>> combinedInventory = ImmutableList.of(this.main, this.armor, this.offHand, DefaultedList.ofSize(72, ItemStack.EMPTY));
+    @Unique private final DefaultedList<ItemStack> extended = DefaultedList.ofSize(72, ItemStack.EMPTY);
+
     @Shadow public abstract ItemStack getStack(int slot);
     @Shadow protected abstract boolean canStackAddMore(ItemStack existingStack, ItemStack stack);
 
     @Shadow public abstract void setStack(int slot, ItemStack stack);
 
-    @Unique
-    private DefaultedList<ItemStack> getExtendedInventory() {
-        return combinedInventory.get(3);
-    }
-    
-    // write extended slots to nbt
-    @Inject(
-            method = "writeNbt",
-            at = @At("RETURN")
-    )
-    private void writeNbt(NbtList nbtList, CallbackInfoReturnable<NbtList> cir) {
-        for (int i = 0; i < this.getExtendedInventory().size(); i++) {
-            if (!this.getExtendedInventory().get(i).isEmpty()) {
-                NbtCompound nbtCompound = new NbtCompound();
-                nbtCompound.putByte("Slot", (byte)(i + 175));
-                nbtList.add(this.getExtendedInventory().get(i).toNbt(this.player.getRegistryManager(), nbtCompound));
-            }
-        }
-    }
-    
-    // read extended slots from nbt
-    @Inject(
-            method = "readNbt",
-            at = @At("RETURN")
-    )
-    private void readNbt(NbtList nbtList, CallbackInfo ci) {
-        this.getExtendedInventory().clear();
+    @Shadow private int selectedSlot;
 
-        for (int i = 0; i < nbtList.size(); i++) {
-            NbtCompound nbtCompound = nbtList.getCompound(i);
-            int j = nbtCompound.getByte("Slot") & 255;
-            ItemStack itemStack = ItemStack.fromNbt(this.player.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY);
-            if (j >= 175 && j < this.getExtendedInventory().size() + 175) {
-                this.getExtendedInventory().set(j - 175, itemStack);
-            }
-        }
-    }
-    
-    // include extended slots inventory size
-    @Inject(
-            method = "size",
-            at = @At("RETURN"),
-            cancellable = true
+    // allow getting selected stack from extended inventory
+    @Redirect(
+            method = "getSelectedStack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/collection/DefaultedList;get(I)Ljava/lang/Object;"
+            )
     )
-    private void size(CallbackInfoReturnable<Integer> cir) {
-        cir.setReturnValue(cir.getReturnValue() + this.getExtendedInventory().size());
+    private Object getSelectedStack(DefaultedList<ItemStack> instance, int index) {
+        return getStack(index);
     }
     
-    // include extended slots in empty calculation
-    @Inject(
-            method = "isEmpty",
-            at = @At("RETURN"),
-            cancellable = true
+    // allow setting selected stack to extended inventory
+    @Redirect(
+            method = "setSelectedStack",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/collection/DefaultedList;set(ILjava/lang/Object;)Ljava/lang/Object;"
+            )
     )
-    private void isEmpty(CallbackInfoReturnable<Boolean> cir) {
-        for (ItemStack itemStack : this.getExtendedInventory()) {
-            if (!itemStack.isEmpty()) {
-                cir.setReturnValue(false);
-            }
-        }
+    private Object setSelectedStack(DefaultedList<ItemStack> instance, int index, Object element) {
+        ItemStack previousStack  = getStack(index);
+        setStack(index, (ItemStack) element);
+        return previousStack;
     }
     
-    // include extended inventory in empty slots (only if not restricted to equipment)
+    // getHotbarSize()
+    // getMainStacks()
+
+    // include extended inventory in empty slots (old, removed restrict to equipment checks)
     @Inject(
             method = "getEmptySlot",
             at = @At("RETURN"),
@@ -105,47 +73,8 @@ public abstract class M_PlayerInventory {
     )
     private void getEmptySlot(CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValue() == -1) {
-            if (!TripleInventory.restrictExtendedHotbarToEquipment()) {
-                for (int i = 41; i < 59; i++) {
-                    if (InventoryHelper.isSlotEnabled(i) && this.getStack(i).isEmpty()) {
-                        cir.setReturnValue(i);
-                        return;
-                    }
-                }
-            }
-            if (!TripleInventory.restrictExtendedInventoryToEquipment()) {
-                for (int i = 59; i < 41 + this.getExtendedInventory().size(); i++) {
-                    if (InventoryHelper.isSlotEnabled(i) && this.getStack(i).isEmpty()) {
-                        cir.setReturnValue(i);
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    
-    // allow extended hotbar indexes
-    @Inject(
-            method = "isValidHotbarIndex",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private static void isValidHotbarIndex(int slot, CallbackInfoReturnable<Boolean> cir) {
-        if (slot >= 41 && slot <= 58) {
-            cir.setReturnValue(true);
-        }
-    }
-    
-    // allow picking up items into extended inventory
-    @Inject(
-            method = "getOccupiedSlotWithRoomForStack",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private void getOccupiedSlotWithRoomForStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
-        if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + this.getExtendedInventory().size(); i++) {
-                if (InventoryHelper.isSlotEnabled(i) && this.canStackAddMore(this.getStack(i), stack)) {
+            for (int i = 41; i < 41 + extended.size(); i++) {
+                if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && this.getStack(i).isEmpty()) {
                     cir.setReturnValue(i);
                     return;
                 }
@@ -153,64 +82,7 @@ public abstract class M_PlayerInventory {
         }
     }
 
-    // allow pick-block from extended inventory
-    @Inject(
-            method = "getSlotWithStack",
-            at = @At("RETURN"),
-            cancellable = true
-    )
-    private void getSlotWithStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
-        if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + this.getExtendedInventory().size(); i++) {
-                if (InventoryHelper.isSlotEnabled(i) && !this.getStack(i).isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, this.getStack(i))) {
-                    cir.setReturnValue(i);
-                    return;
-                }
-            }
-        }
-    }
-    
-    // fix to allow inserting items into extended inventory
-    @Redirect(
-            method = "insertStack(ILnet/minecraft/item/ItemStack;)Z",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/util/collection/DefaultedList;set(ILjava/lang/Object;)Ljava/lang/Object;"
-            )
-    )
-    private Object insertStackSet(DefaultedList<?> instance, int index, Object element) {
-        this.setStack(index, (ItemStack) element);
-        return null;
-    }
-
-    // fix to allow inserting items into extended inventory
-    @Redirect(
-            method = "insertStack(ILnet/minecraft/item/ItemStack;)Z",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/util/collection/DefaultedList;get(I)Ljava/lang/Object;"
-            )
-    )
-    private Object insertStackGet(DefaultedList<?> instance, int index) {
-        return this.getStack(index);
-    }
-
-    // fix to allow pick-block to extended inventory
-    @Redirect(
-            method = "swapSlotWithHotbar",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/util/collection/DefaultedList;set(ILjava/lang/Object;)Ljava/lang/Object;",
-                    ordinal = 1
-            )
-    )
-    @SuppressWarnings("SameReturnValue")
-    private Object swapSlotWithHotbarSet(DefaultedList<?> instance, int index, Object element) {
-        this.setStack(index, (ItemStack) element);
-        return null;
-    }
-
-    // fix to prevent adding creative pick block into extended inventory
+    // fix to prevent adding creative pick block into extended inventory 
     @Redirect(
             method = "swapStackWithHotbar",
             at = @At(
@@ -226,7 +98,22 @@ public abstract class M_PlayerInventory {
         return null;
     }
 
-    // fix to allow pick-block from extended inventory
+    // fix to allow pick-block to extended inventory 
+    @Redirect(
+            method = "swapSlotWithHotbar",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/collection/DefaultedList;set(ILjava/lang/Object;)Ljava/lang/Object;",
+                    ordinal = 1
+            )
+    )
+    @SuppressWarnings("SameReturnValue")
+    private Object swapSlotWithHotbarSet(DefaultedList<?> instance, int index, Object element) {
+        this.setStack(index, (ItemStack) element);
+        return null;
+    }
+
+    // fix to allow pick-block from extended inventory 
     @Redirect(
             method = "swapSlotWithHotbar",
             at = @At(
@@ -239,27 +126,258 @@ public abstract class M_PlayerInventory {
         return this.getStack(index);
     }
     
-    // look in whole inventory for main hand stack
-    @Redirect(
-            method = "getMainHandStack",
-            at = @At(
-                    value = "INVOKE", 
-                    target = "Lnet/minecraft/util/collection/DefaultedList;get(I)Ljava/lang/Object;"
-            )
+    // allow extended hotbar indexes 
+    @Inject(
+            method = "isValidHotbarIndex",
+            at = @At("RETURN"),
+            cancellable = true
     )
-    private Object getMainHandStack(DefaultedList<ItemStack> instance, int index) {
-        return getStack(index);
+    private static void isValidHotbarIndex(int slot, CallbackInfoReturnable<Boolean> cir) {
+        if (slot >= 41 && slot <= 58) {
+            cir.setReturnValue(true);
+        }
+    }
+
+    // allow pick-block from extended inventory 
+    @Inject(
+            method = "getSlotWithStack",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void getSlotWithStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+        if (cir.getReturnValue() == -1) {
+            for (int i = 41; i < 41 + extended.size(); i++) {
+                if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && !this.getStack(i).isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, this.getStack(i))) {
+                    cir.setReturnValue(i);
+                    return;
+                }
+            }
+        }
     }
     
-    // look in whole inventory for selected item
+    // include extended inventory
+    @Inject(
+            method = "getMatchingSlot",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void getMatchingSlot(RegistryEntry<Item> item, ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+        if (cir.getReturnValue() == -1) {
+            for (int i = 41; i < 41 + extended.size(); i++) {
+                if (InventoryHelper.isSlotEnabled(i, this.player.getWorld())) {
+                    ItemStack itemStack = getStack(i);
+                    if (!itemStack.isEmpty()
+                            && itemStack.itemMatches(item)
+                            && PlayerInventory.usableWhenFillingSlot(itemStack)
+                            && (stack.isEmpty() || ItemStack.areItemsAndComponentsEqual(stack, itemStack))) {
+                        cir.setReturnValue(i);
+                    }
+                }
+            }
+        }
+    }
+    
+    // getSwappableHotbarSlot()
+
+    // allow picking up items into extended inventory 
+    @Inject(
+            method = "getOccupiedSlotWithRoomForStack",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void getOccupiedSlotWithRoomForStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
+        if (cir.getReturnValue() == -1) {
+            for (int i = 41; i < 41 + extended.size(); i++) {
+                if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && this.canStackAddMore(this.getStack(i), stack)) {
+                    cir.setReturnValue(i);
+                    return;
+                }
+            }
+        }
+    }
+    
+    // update items in extended inventory
+    @Inject(
+            method = "updateItems",
+            at = @At("TAIL")
+    )
+    private void updateItems(CallbackInfo ci) {
+        for (int i = 41; i < 41 + this.extended.size(); i++) {
+            ItemStack itemStack = this.getStack(i);
+            if (!itemStack.isEmpty()) {
+                itemStack.inventoryTick(this.player.getWorld(), this.player, i == this.selectedSlot ? EquipmentSlot.MAINHAND : null);
+            }
+        }
+    }
+
+    // fix to allow inserting items into extended inventory 
     @Redirect(
-            method = "getBlockBreakingSpeed",
+            method = "insertStack(ILnet/minecraft/item/ItemStack;)Z",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/collection/DefaultedList;set(ILjava/lang/Object;)Ljava/lang/Object;"
+            )
+    )
+    private Object insertStackSet(DefaultedList<?> instance, int index, Object element) {
+        this.setStack(index, (ItemStack) element);
+        return null;
+    }
+
+    // fix to allow inserting items into extended inventory 
+    @Redirect(
+            method = "insertStack(ILnet/minecraft/item/ItemStack;)Z",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/util/collection/DefaultedList;get(I)Ljava/lang/Object;"
             )
     )
-    private Object getBlockBreakingSpeed(DefaultedList<ItemStack> instance, int index) {
-        return getStack(index);
+    private Object insertStackGet(DefaultedList<?> instance, int index) {
+        return this.getStack(index);
     }
+    
+    @Inject(
+            method = "removeStack(II)Lnet/minecraft/item/ItemStack;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void removeStack(int slot, int amount, CallbackInfoReturnable<ItemStack> cir) {
+        if (slot >= 41 && slot < 41 + extended.size()) {
+            cir.setReturnValue(Inventories.splitStack(this.extended, slot - 41, amount));
+        }
+    }
+    
+    @Inject(
+            method = "removeOne",
+            at = @At("TAIL"),
+            cancellable = true
+    )
+    private void removeOne(ItemStack stack, CallbackInfo ci) {
+        for (int i = 41; i < 41 + this.extended.size(); i++) {
+            if (this.getStack(i) == stack) {
+                this.setStack(i, ItemStack.EMPTY);
+                ci.cancel();
+            }
+        }
+    }
+    
+    @Inject(
+            method = "removeStack(I)Lnet/minecraft/item/ItemStack;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void removeStack(int slot, CallbackInfoReturnable<ItemStack> cir) {
+        if (slot >= 41 && slot < 41 + extended.size()) {
+            ItemStack itemStack = this.getStack(slot);
+            this.setStack(slot, ItemStack.EMPTY);
+            cir.setReturnValue(itemStack);
+        }
+    }
+    
+    // include extended inventory when setting stacks
+    @Inject(
+            method = "setStack",
+            at = @At("TAIL")
+    )
+    private void setStack(int slot, ItemStack stack, CallbackInfo ci) {
+        if (slot >= 41) {
+            this.extended.set(slot - 41, stack);
+        }
+    }
+
+    // write extended slots to nbt 
+    @Inject(
+            method = "writeNbt",
+            at = @At("RETURN")
+    )
+    private void writeNbt(NbtList nbtList, CallbackInfoReturnable<NbtList> cir) {
+        for (int i = 0; i < extended.size(); i++) {
+            if (!extended.get(i).isEmpty()) {
+                NbtCompound nbtCompound = new NbtCompound();
+                nbtCompound.putByte("Slot", (byte)(i + 175));
+                nbtList.add(extended.get(i).toNbt(this.player.getRegistryManager(), nbtCompound));
+            }
+        }
+    }
+
+    // read extended slots from nbt 
+    @Inject(
+            method = "readNbt",
+            at = @At("RETURN")
+    )
+    private void readNbt(NbtList nbtList, CallbackInfo ci) {
+        extended.clear();
+
+        for (int i = 0; i < nbtList.size(); i++) {
+            NbtCompound nbtCompound = nbtList.getCompoundOrEmpty(i);
+            int j = nbtCompound.getByte("Slot", (byte) 0) & 255;
+            ItemStack itemStack = ItemStack.fromNbt(this.player.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY);
+            if (j >= 175 && j < extended.size() + 175) {
+                extended.set(j - 175, itemStack);
+            }
+        }
+    }
+
+    // include extended slots inventory size 
+    @Inject(
+            method = "size",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void size(CallbackInfoReturnable<Integer> cir) {
+        cir.setReturnValue(cir.getReturnValue() + extended.size());
+    }
+
+    // include extended slots in empty calculation (old, added check at start)
+    @Inject(
+            method = "isEmpty",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void isEmpty(CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValue()) {
+            for (ItemStack itemStack : extended) {
+                if (!itemStack.isEmpty()) {
+                    cir.setReturnValue(false);
+                }
+            }
+        }
+    }
+    
+    // include extended slots when getting stack
+    @Inject(
+            method = "getStack",
+            at = @At("RETURN"),
+            cancellable = true
+    )
+    private void getStack(int slot, CallbackInfoReturnable<ItemStack> cir) {
+        if (slot >= 41) {
+            cir.setReturnValue(this.extended.get(slot - 41));
+        }
+    }
+    
+    // include extended slots when dropping all slots
+    @Inject(
+            method = "dropAll",
+            at = @At("TAIL")
+    )
+    private void dropAll(CallbackInfo ci) {
+        for (int i = 41; i < 41 + this.extended.size(); i++) {
+            ItemStack itemStack = getStack(i);
+            if (!itemStack.isEmpty()) {
+                this.player.dropItem(itemStack, true, false);
+                setStack(i, ItemStack.EMPTY);
+            }
+        }
+    }
+    
+    // include extended slots when clearing
+    @Inject(
+            method = "clear",
+            at = @At("TAIL")
+    )
+    private void clear(CallbackInfo ci) {
+        this.extended.clear();
+    }
+    
+    // populateRecipeFinder()
 }

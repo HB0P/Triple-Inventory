@@ -7,8 +7,11 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.StonecutterScreenHandler;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(StonecutterScreenHandler.class)
 public abstract class M_StonecutterScreenHandler extends ScreenHandler {
-    
+
+    @Shadow @Final private World world;
+
     protected M_StonecutterScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
     }
@@ -37,6 +42,6 @@ public abstract class M_StonecutterScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(StonecutterScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(2, stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(2, stack, i, j, b, this::insertItem, this.world);
     }
 }

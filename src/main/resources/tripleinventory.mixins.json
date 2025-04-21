@@ -5,10 +5,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "M_Item",
-    "M_PlayerEntity",
     "M_PlayerInventory",
     "M_ScreenHandler",
     "M_ServerPlayNetworkHandler",
+    "M_ServerWorld",
+    "M_World",
     "screenhandlers.M_AbstractFurnaceScreenHandler",
     "screenhandlers.M_BeaconScreenHandler",
     "screenhandlers.M_BrewingStandScreenHandler",

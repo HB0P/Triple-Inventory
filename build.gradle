@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version '1.10-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -36,10 +36,7 @@ repositories {
         url = 'https://maven.ladysnake.org'
     }
     maven {
-        url = "https://maven.shedaniel.me"
-    }
-    maven {
-        url = "https://maven.wispforest.io/releases/"
+        url = "https://maven.isxander.dev/releases"
     }
 }
 
@@ -50,9 +47,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-    annotationProcessor modImplementation("io.wispforest:owo-lib:${project.owo_version}")
+    
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+    modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
 }
 
 processResources {

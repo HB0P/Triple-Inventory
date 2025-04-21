@@ -1,6 +1,5 @@
 package dev.hbop.tripleinventory.mixin.screenhandlers;
 
-import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.helper.InventoryArea;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.entity.EquipmentSlot;
@@ -11,12 +10,15 @@ import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static dev.hbop.tripleinventory.helper.InventoryArea.*;
 
 @Mixin(PlayerScreenHandler.class)
 public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler {
@@ -39,7 +41,7 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
      */
     @Overwrite
     public ItemStack quickMove(PlayerEntity player, int slot) {
-        int size = TripleInventory.extendedInventorySize();
+        int size = player.getWorld().getExtendedInventorySize();
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot2 = this.slots.get(slot);
         if (slot2.hasStack()) {
@@ -48,10 +50,8 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
             EquipmentSlot equipmentSlot = player.getPreferredEquipmentSlot(itemStack);
             // crafting output -> main, extended
             if (slot == 0) {
-                if (!this.insertItem(itemStack2, 9, 45, true)) {
-                    if (!this.insertItem(itemStack2, 46, 46 + size * 8, true)) {
-                        return ItemStack.EMPTY;
-                    }
+                if (!this.insertItemToWhole(size, itemStack2)) {
+                    return ItemStack.EMPTY;
                 }
                 slot2.onQuickTransfer(itemStack2, itemStack);
             }
@@ -70,43 +70,43 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
             } 
             // anywhere -> offhand
             else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasStack()) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.OFFHAND)) {
+                if (!this.insertItem(size, itemStack2, OFFHAND)) {
                     return ItemStack.EMPTY;
                 }
             } 
             // main inventory -> hotbar
-            else if (slot >= 9 && slot < 36) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.MAIN_HOTBAR, InventoryArea.LEFT_HOTBAR, InventoryArea.RIGHT_HOTBAR)) {
+            else if (MAIN_INVENTORY.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, MAIN_HOTBAR, LEFT_HOTBAR, RIGHT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
             } 
             // main hotbar -> inventory
-            else if (slot >= 36 && slot < 45) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.MAIN_INVENTORY, InventoryArea.LEFT_INVENTORY, InventoryArea.RIGHT_INVENTORY)) {
+            else if (MAIN_HOTBAR.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, MAIN_INVENTORY, LEFT_INVENTORY, RIGHT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
             }
             // left hotbar -> inventory
-            else if (slot >= 46 && slot < 46 + size) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.LEFT_INVENTORY, InventoryArea.MAIN_INVENTORY, InventoryArea.RIGHT_INVENTORY)) {
+            else if (LEFT_HOTBAR.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, LEFT_INVENTORY, MAIN_INVENTORY, RIGHT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
             } 
             // right hotbar -> inventory
-            else if (slot >= 46 + size && slot < 46 + size * 2) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.RIGHT_INVENTORY, InventoryArea.MAIN_INVENTORY, InventoryArea.LEFT_INVENTORY)) {
+            else if (RIGHT_HOTBAR.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, RIGHT_INVENTORY, MAIN_INVENTORY, LEFT_INVENTORY)) {
                     return ItemStack.EMPTY;
                 }
             } 
             // left inventory -> hotbar
-            else if (slot >= 46 + size * 2 && slot < 46 + size * 5) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.LEFT_HOTBAR, InventoryArea.MAIN_HOTBAR, InventoryArea.RIGHT_HOTBAR)) {
+            else if (LEFT_INVENTORY.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, LEFT_HOTBAR, MAIN_HOTBAR, RIGHT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
             } 
             // right inventory -> hotbar
-            else if (slot >= 46 + size * 5 && slot < 46 + size * 8) {
-                if (!this.insertItem(size, itemStack2, InventoryArea.RIGHT_HOTBAR, InventoryArea.MAIN_HOTBAR, InventoryArea.LEFT_HOTBAR)) {
+            else if (RIGHT_INVENTORY.containsSlot(slot, size)) {
+                if (!this.insertItem(size, itemStack2, RIGHT_HOTBAR, MAIN_HOTBAR, LEFT_HOTBAR)) {
                     return ItemStack.EMPTY;
                 }
             } 
@@ -137,8 +137,10 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
     @Unique
     private boolean insertItem(int size, ItemStack stack, InventoryArea ... areas) {
         for (InventoryArea area : areas) {
-            if (this.insertItem(stack, area.getStartIndex(size), area.getEndIndex(size), false)) {
-                return true;
+            for (Pair<Integer, Integer> region : area.getRegions(size)) {
+                if (this.insertItem(stack, region.getLeft(), region.getRight(), false)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -147,12 +149,12 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
     @Unique
     private boolean insertItemToWhole(int size, ItemStack stack) {
         return insertItem(size, stack, 
-                InventoryArea.MAIN_INVENTORY, 
-                InventoryArea.LEFT_INVENTORY, 
-                InventoryArea.RIGHT_INVENTORY,
-                InventoryArea.MAIN_HOTBAR,
-                InventoryArea.LEFT_HOTBAR,
-                InventoryArea.RIGHT_HOTBAR
+                MAIN_INVENTORY, 
+                LEFT_INVENTORY, 
+                RIGHT_INVENTORY,
+                MAIN_HOTBAR,
+                LEFT_HOTBAR,
+                RIGHT_HOTBAR
         );
     }
 }

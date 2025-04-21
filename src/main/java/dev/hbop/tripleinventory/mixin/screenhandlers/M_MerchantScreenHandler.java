@@ -7,13 +7,17 @@ import net.minecraft.screen.MerchantScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.village.Merchant;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MerchantScreenHandler.class)
 public abstract class M_MerchantScreenHandler extends ScreenHandler {
+    
+    @Unique private World world;
     
     protected M_MerchantScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
@@ -24,6 +28,7 @@ public abstract class M_MerchantScreenHandler extends ScreenHandler {
             at = @At("TAIL")
     )
     private void init(int syncId, PlayerInventory playerInventory, Merchant merchant, CallbackInfo ci) {
+        this.world = playerInventory.player.getWorld();
         InventoryHelper.addExtraSlots(playerInventory, 276, 166, 100, slot -> this.addSlot(slot));
     }
 
@@ -35,7 +40,7 @@ public abstract class M_MerchantScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(MerchantScreenHandler instance, ItemStack stack, int i, int j, boolean b) {
-        return InventoryHelper.handleQuickMove(3, stack, i, j, b, this::insertItem);
+        return InventoryHelper.handleQuickMove(3, stack, i, j, b, this::insertItem, this.world);
     }
     
     // allow autofill trade items from extended inventory

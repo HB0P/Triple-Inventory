@@ -1,29 +1,43 @@
 package dev.hbop.tripleinventory.helper;
 
+import net.minecraft.util.Pair;
+
+import java.util.List;
 import java.util.function.Function;
 
 public enum InventoryArea {
-    MAIN_HOTBAR(size -> 36, size -> 45),
-    MAIN_INVENTORY(size -> 9, size -> 36),
-    LEFT_HOTBAR(size -> 46, size -> 46 + size),
-    LEFT_INVENTORY(size -> 46 + size * 2, size -> 46 + size * 5),
-    RIGHT_HOTBAR(size -> 46 + size, size -> 46 + size * 2),
-    RIGHT_INVENTORY(size -> 46 + size * 5, size -> 46 + size * 8),
-    OFFHAND(size -> 45, size -> 46);
+    MAIN_HOTBAR(size -> List.of(new Pair<>(36, 45))),
+    MAIN_INVENTORY(size -> List.of(new Pair<>(9, 36))),
+    LEFT_HOTBAR(size -> List.of(new Pair<>(46, 46 + size))),
+    LEFT_INVENTORY(size -> List.of(
+            new Pair<>(64, 64 + size),
+            new Pair<>(73, 73 + size),
+            new Pair<>(82, 82 + size)
+    )),
+    RIGHT_HOTBAR(size -> List.of(new Pair<>(55, 55 + size))),
+    RIGHT_INVENTORY(size -> List.of(
+            new Pair<>(91, 91 + size),
+            new Pair<>(100, 100 + size),
+            new Pair<>(109, 109 + size)
+    )),
+    OFFHAND(size -> List.of(new Pair<>(45, 46)));
 
-    private final Function<Integer, Integer> startIndex;
-    private final Function<Integer, Integer> endIndex;
+    private final Function<Integer, List<Pair<Integer, Integer>>> regions;
 
-    InventoryArea(Function<Integer, Integer> startIndex, Function<Integer, Integer> endIndex) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
+    InventoryArea(Function<Integer, List<Pair<Integer, Integer>>> regions) {
+        this.regions = regions;
     }
 
-    public int getStartIndex(int size) {
-        return startIndex.apply(size);
+    public List<Pair<Integer, Integer>> getRegions(int size) {
+        return regions.apply(size);
     }
-
-    public int getEndIndex(int size) {
-        return endIndex.apply(size);
+    
+    public boolean containsSlot(int slot, int size) {
+        for (Pair<Integer, Integer> region : getRegions(size)) {
+            if (slot >= region.getLeft() && slot < region.getRight()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

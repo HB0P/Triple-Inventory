@@ -5,8 +5,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.*;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -14,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BeaconScreenHandler.class)
 public abstract class M_BeaconScreenHandler extends ScreenHandler {
+
+    @Unique private World world;
 
     protected M_BeaconScreenHandler(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
@@ -25,6 +29,7 @@ public abstract class M_BeaconScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, Inventory inventory, PropertyDelegate propertyDelegate, ScreenHandlerContext context, CallbackInfo ci) {
         if (inventory instanceof PlayerInventory playerInventory) {
+            this.world = playerInventory.player.getWorld();
             InventoryHelper.addExtraSlots(playerInventory, 230, 219, 28, slot -> this.addSlot(slot));
         }
     }
@@ -37,7 +42,7 @@ public abstract class M_BeaconScreenHandler extends ScreenHandler {
             )
     )
     private boolean quickMove(BeaconScreenHandler instance, ItemStack stack, int i, int j, boolean fromLast) {
-        if (fromLast) return InventoryHelper.handleQuickMove(1, stack, i, j, true, this::insertItem);
+        if (fromLast) return InventoryHelper.handleQuickMove(1, stack, i, j, true, this::insertItem, this.world);
         else return this.insertItem(stack, i, j, false);
     }
 }

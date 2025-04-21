@@ -1,7 +1,7 @@
 package dev.hbop.tripleinventory.client.mixin;
 
 import dev.hbop.tripleinventory.client.ClientSlotData;
-import dev.hbop.tripleinventory.client.TripleInventoryClient;
+import dev.hbop.tripleinventory.client.config.ClientConfig;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -38,7 +38,7 @@ public abstract class M_ClientPlayerInteractionManager {
             )
     )
     private void startAttackBlock(BlockPos pos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-        if (!TripleInventoryClient.CONFIG.autoSelectTools()) return;
+        if (!ClientConfig.HANDLER.instance().autoSelectTools) return;
         
         assert this.client.world != null;
         BlockState state = this.client.world.getBlockState(pos);
@@ -46,9 +46,9 @@ public abstract class M_ClientPlayerInteractionManager {
         assert player != null;
         
         int i = InventoryHelper.getSlotInHotbarMatching(player.getInventory(), stack -> stack.isSuitableFor(state));
-        if (i != -1 && i != player.getInventory().selectedSlot) {
-            ClientSlotData.INSTANCE.set(player.getInventory().selectedSlot, true);
-            player.getInventory().selectedSlot = i;
+        if (i != -1 && i != player.getInventory().getSelectedSlot()) {
+            ClientSlotData.INSTANCE.set(player.getInventory().getSelectedSlot(), true);
+            player.getInventory().setSelectedSlot(i);
             syncSelectedSlot();
         }
     }
@@ -71,10 +71,10 @@ public abstract class M_ClientPlayerInteractionManager {
             )
     )
     private void interactBlock(ClientPlayerEntity player, Hand hand, BlockHitResult hitResult, CallbackInfoReturnable<ActionResult> cir) {
-        if (!TripleInventoryClient.CONFIG.autoReturnOnUse()) return;
+        if (!ClientConfig.HANDLER.instance().autoReturnOnUse) return;
         
         if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot()) {
-            player.getInventory().selectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
+            player.getInventory().setSelectedSlot(ClientSlotData.INSTANCE.getPreviouslySelectedSlot());
             ClientSlotData.INSTANCE.reset();
             syncSelectedSlot();
         }
@@ -89,10 +89,10 @@ public abstract class M_ClientPlayerInteractionManager {
             )
     )
     private void interactItem(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!TripleInventoryClient.CONFIG.autoReturnOnUse()) return;
+        if (!ClientConfig.HANDLER.instance().autoReturnOnUse) return;
 
         if (ClientSlotData.INSTANCE.hasPreviouslySelectedSlot()) {
-            player.getInventory().selectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
+            player.getInventory().setSelectedSlot(ClientSlotData.INSTANCE.getPreviouslySelectedSlot());
             ClientSlotData.INSTANCE.reset();
             syncSelectedSlot();
         }
@@ -107,7 +107,7 @@ public abstract class M_ClientPlayerInteractionManager {
         ClientSlotData.INSTANCE.decrementSelectedSlotResetCooldown();
         if (ClientSlotData.INSTANCE.isSelectedSlotResetCooldownElapsed()) {
             assert this.client.player != null;
-            this.client.player.getInventory().selectedSlot = ClientSlotData.INSTANCE.getPreviouslySelectedSlot();
+            this.client.player.getInventory().setSelectedSlot(ClientSlotData.INSTANCE.getPreviouslySelectedSlot());
             ClientSlotData.INSTANCE.reset();
         }
     }

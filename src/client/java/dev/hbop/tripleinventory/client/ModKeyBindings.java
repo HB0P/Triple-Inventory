@@ -1,6 +1,5 @@
 package dev.hbop.tripleinventory.client;
 
-import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -40,15 +39,15 @@ public class ModKeyBindings {
                         || stack.isOf(Items.MACE)
                         || stack.isOf(Items.TRIDENT)
                 );
-                if (i != -1 && player.getInventory().selectedSlot != i) {
-                    ClientSlotData.INSTANCE.set(player.getInventory().selectedSlot, false);
-                    player.getInventory().selectedSlot = i;
+                if (i != -1 && player.getInventory().getSelectedSlot() != i) {
+                    ClientSlotData.INSTANCE.set(player.getInventory().getSelectedSlot(), false);
+                    player.getInventory().setSelectedSlot(i);
                 }
             }
             for (int i = 0; i < 18; i++) {
                 while (extendedHotbarKeys[i].wasPressed()) {
-                    if ((i % 9) >= TripleInventory.extendedInventorySize()) break;
-                    player.getInventory().selectedSlot = 41 + i;
+                    if ((i % 9) >= player.getWorld().getExtendedInventorySize()) break;
+                    player.getInventory().setSelectedSlot(41 + i);
                 }
             }
         });
