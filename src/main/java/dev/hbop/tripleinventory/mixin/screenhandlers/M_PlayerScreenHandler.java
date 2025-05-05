@@ -1,10 +1,8 @@
 package dev.hbop.tripleinventory.mixin.screenhandlers;
 
 import dev.hbop.tripleinventory.helper.InventoryArea;
-import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.screen.PlayerScreenHandler;
@@ -14,9 +12,6 @@ import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static dev.hbop.tripleinventory.helper.InventoryArea.*;
 
@@ -26,14 +21,7 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
     public M_PlayerScreenHandler(ScreenHandlerType<?> screenHandlerType, int i) {
         super(screenHandlerType, i);
     }
-
-    @Inject(
-            method = "<init>",
-            at = @At("TAIL")
-    )
-    private void init(PlayerInventory inventory, boolean onServer, PlayerEntity owner, CallbackInfo ci) {
-        InventoryHelper.addExtraSlots(inventory, slot -> this.addSlot(slot));
-    }
+    
 
     /**
      * @author HB0P
@@ -69,7 +57,7 @@ public abstract class M_PlayerScreenHandler extends AbstractRecipeScreenHandler 
                 }
             } 
             // anywhere -> offhand
-            else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(45).hasStack()) {
+            else if (equipmentSlot == EquipmentSlot.OFFHAND && !this.slots.get(144).hasStack()) {
                 if (!this.insertItem(size, itemStack2, OFFHAND)) {
                     return ItemStack.EMPTY;
                 }

@@ -30,7 +30,6 @@ public abstract class M_GrindstoneScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
         this.world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, slot -> this.addSlot(slot));
     }
 
     @Redirect(

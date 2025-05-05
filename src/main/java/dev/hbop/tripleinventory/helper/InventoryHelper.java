@@ -2,12 +2,10 @@ package dev.hbop.tripleinventory.helper;
 
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.world.World;
 
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class InventoryHelper {
@@ -38,45 +36,6 @@ public class InventoryHelper {
         }
         return -1;
     }
-    
-    public static void addExtraSlots(PlayerInventory inventory, int width, int height, int subInventoryShift, Consumer<Slot> consumer) {
-        World world = inventory.player.getWorld();
-        // left hotbar
-        for (int i = 0; i < 9; i++) {
-            consumer.accept(new ExtendedSlot(inventory, i + 41, -14 - i * 18, height - 24, world, i + 1));
-        }
-        // right hotbar
-        for (int i = 0; i < 9; i++) {
-            consumer.accept(new ExtendedSlot(inventory, i + 50, width - 2 + i * 18, height - 24, world, i + 1));
-        }
-        // left inventory
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 9; x++) {
-                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 59, -14 - x * 18, height - 82 + y * 18, world, x + 1));
-            }
-        }
-        // right inventory
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 9; x++) {
-                consumer.accept(new ExtendedSlot(inventory, y * 9 + x + 86, width - 2 + x * 18, height - 82 + y * 18, world, x + 1));
-            }
-        }
-        // shulker inventory
-        SimpleInventory shulkerInventory = new SimpleInventory(27);
-        for (int y = 0; y < 3; y++) {
-            for (int x = 0; x < 9; x++) {
-                consumer.accept(new ItemInventorySlot(shulkerInventory, y * 9 + x, 8 + x * 18 + subInventoryShift, height + 7 + y * 18));
-            }
-        }
-    }
-
-    public static void addExtraSlots(PlayerInventory inventory, int width, int height, Consumer<Slot> consumer) {
-        addExtraSlots(inventory, width, height, 0, consumer);
-    }
-    
-    public static void addExtraSlots(PlayerInventory inventory, Consumer<Slot> consumer) {
-        addExtraSlots(inventory, 176, 166, consumer);
-    }
 
     public static boolean handleQuickMove(int start, ItemStack stack, int i, int j, boolean b, InsertItemFunction function, World world) {
         boolean changed = function.apply(stack, i, j, b);
@@ -96,11 +55,13 @@ public class InventoryHelper {
         private final World world;
         private final int maxSize;
         public boolean isEnabled = true;
+        public boolean isRight;
         
-        private ExtendedSlot(Inventory inventory, int index, int x, int y, World world, int maxSize) {
+        public ExtendedSlot(Inventory inventory, int index, int x, int y, boolean isRight, World world, int maxSize) {
             super(inventory, index, x, y);
             this.world = world;
             this.maxSize = maxSize;
+            this.isRight = isRight;
         }
         
         @Override

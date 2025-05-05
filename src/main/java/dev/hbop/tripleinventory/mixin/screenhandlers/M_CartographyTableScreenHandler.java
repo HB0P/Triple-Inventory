@@ -31,7 +31,6 @@ public abstract class M_CartographyTableScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory inventory, ScreenHandlerContext context, CallbackInfo ci) {
         this.world = inventory.player.getWorld();
-        InventoryHelper.addExtraSlots(inventory, slot -> this.addSlot(slot));
     }
 
     @Redirect(

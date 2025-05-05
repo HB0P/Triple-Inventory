@@ -34,7 +34,6 @@ public abstract class M_GenericContainerScreenHandler extends ScreenHandler {
     )
     private void init(ScreenHandlerType<?> type, int syncId, PlayerInventory playerInventory, Inventory inventory, int rows, CallbackInfo ci) {
         this.world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, 176, 113 + this.rows * 18, slot -> this.addSlot(slot));
     }
     @Redirect(
             method = "quickMove",

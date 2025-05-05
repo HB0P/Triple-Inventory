@@ -1,18 +1,15 @@
 package dev.hbop.tripleinventory.client.mixin;
 
-import dev.hbop.tripleinventory.client.config.ClientConfig;
-import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.RecipeBookScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
-import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(RecipeBookScreen.class)
 public abstract class M_RecipeBookScreen<T extends AbstractRecipeScreenHandler> extends HandledScreen<T> {
@@ -30,31 +27,5 @@ public abstract class M_RecipeBookScreen<T extends AbstractRecipeScreenHandler> 
     @Overwrite
     public boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button) {
         return super.isClickOutsideBounds(mouseX, mouseY, left, top,  button) && this.recipeBook.isClickOutsideBounds(mouseX, mouseY, this.x, this.y, this.backgroundWidth, this.backgroundHeight, button);
-    }
-    
-    @Inject(
-            method = "init",
-            at = @At("TAIL")
-    )
-    private void onInit(CallbackInfo ci) {
-        updateExtendedSlots();
-    }
-    
-    @Inject(
-            method = "onRecipeBookToggled",
-            at = @At("HEAD")
-    )
-    private void onRecipeBookToggled(CallbackInfo ci) {
-        updateExtendedSlots();
-    }
-    
-    @Unique
-    private void updateExtendedSlots() {
-        boolean showExtendedInventory = !recipeBook.isOpen() || ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook;
-        for (Slot slot : this.handler.slots) {
-            if (slot instanceof InventoryHelper.ExtendedSlot extendedSlot) {
-                extendedSlot.isEnabled = showExtendedInventory;
-            }
-        }
     }
 }

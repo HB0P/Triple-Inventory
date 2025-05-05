@@ -8,19 +8,19 @@ import java.util.function.Function;
 public enum InventoryArea {
     MAIN_HOTBAR(size -> List.of(new Pair<>(36, 45))),
     MAIN_INVENTORY(size -> List.of(new Pair<>(9, 36))),
-    LEFT_HOTBAR(size -> List.of(new Pair<>(46, 46 + size))),
+    LEFT_HOTBAR(size -> List.of(new Pair<>(45, 45 + size))),
     LEFT_INVENTORY(size -> List.of(
-            new Pair<>(64, 64 + size),
-            new Pair<>(73, 73 + size),
-            new Pair<>(82, 82 + size)
+            new Pair<>(63, 63 + size),
+            new Pair<>(72, 72 + size),
+            new Pair<>(81, 81 + size)
     )),
-    RIGHT_HOTBAR(size -> List.of(new Pair<>(55, 55 + size))),
+    RIGHT_HOTBAR(size -> List.of(new Pair<>(54, 54 + size))),
     RIGHT_INVENTORY(size -> List.of(
-            new Pair<>(91, 91 + size),
-            new Pair<>(100, 100 + size),
-            new Pair<>(109, 109 + size)
+            new Pair<>(90, 90 + size),
+            new Pair<>(99, 99 + size),
+            new Pair<>(108, 108 + size)
     )),
-    OFFHAND(size -> List.of(new Pair<>(45, 46)));
+    OFFHAND(size -> List.of(new Pair<>(144, 145)));
 
     private final Function<Integer, List<Pair<Integer, Integer>>> regions;
 

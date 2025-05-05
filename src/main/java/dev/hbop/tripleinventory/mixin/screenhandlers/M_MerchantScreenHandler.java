@@ -29,7 +29,6 @@ public abstract class M_MerchantScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory playerInventory, Merchant merchant, CallbackInfo ci) {
         this.world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, 276, 166, 100, slot -> this.addSlot(slot));
     }
 
     @Redirect(

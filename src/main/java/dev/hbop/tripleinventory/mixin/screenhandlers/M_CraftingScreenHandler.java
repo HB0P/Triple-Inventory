@@ -2,17 +2,14 @@ package dev.hbop.tripleinventory.mixin.screenhandlers;
 
 import dev.hbop.tripleinventory.helper.InventoryHelper;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.AbstractRecipeScreenHandler;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CraftingScreenHandler.class)
@@ -22,14 +19,6 @@ public abstract class M_CraftingScreenHandler extends AbstractRecipeScreenHandle
 
     public M_CraftingScreenHandler(ScreenHandlerType<?> screenHandlerType, int i) {
         super(screenHandlerType, i);
-    }
-
-    @Inject(
-            method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V",
-            at = @At("TAIL")
-    )
-    private void init(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
-        InventoryHelper.addExtraSlots(playerInventory, slot -> this.addSlot(slot));
     }
 
     @Redirect(

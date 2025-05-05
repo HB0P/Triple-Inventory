@@ -2,22 +2,54 @@ package dev.hbop.tripleinventory.client.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
+import dev.hbop.tripleinventory.TripleInventory;
+import dev.hbop.tripleinventory.helper.ShulkerPosition;
 import dev.isxander.yacl3.api.*;
 import dev.isxander.yacl3.api.controller.ControllerBuilder;
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
 import dev.isxander.yacl3.api.controller.IntegerSliderControllerBuilder;
 import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.MessageScreen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.option.KeybindsScreen;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ModMenuIntegration implements ModMenuApi {
+    
+    private final OptionFlag GAME_LEAVE = client -> {
+        if (client.world == null) return;
 
+        boolean singlePlayer = client.isInSingleplayer();
+        ServerInfo serverInfo = client.getCurrentServerEntry();
+        client.world.disconnect();
+        if (singlePlayer) {
+            client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
+        } else {
+            client.disconnect();
+        }
+
+        TitleScreen titleScreen = new TitleScreen();
+        if (singlePlayer) {
+            client.setScreen(titleScreen);
+        } else if (serverInfo != null && serverInfo.isRealm()) {
+            client.setScreen(new RealmsMainScreen(titleScreen));
+        } else {
+            client.setScreen(new MultiplayerScreen(titleScreen));
+        }
+    };
+    
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
+        ClientConfig.HANDLER.load();
         return parent -> YetAnotherConfigLib.create(ClientConfig.HANDLER, this::getScreenBuilder).generateScreen(parent);
     }
     
@@ -124,17 +156,47 @@ public class ModMenuIntegration implements ModMenuApi {
                         () -> config.colorShulkerBackground,
                         val -> config.colorShulkerBackground = val
                 ).build())
-                /*.option(
-                        createOption(
-                                "shulkerPosition",
-                                defaults.shulkerPosition,
-                                () -> config.shulkerPosition,
-                                val -> config.shulkerPosition = val,
-                                opt -> EnumControllerBuilder
+                .option(
+                        Option.<ShulkerPosition>createBuilder()
+                                .name(Text.translatable("config.tripleinventory.option.shulkerPosition"))
+                                .description((position) -> {
+                                    OptionDescription.Builder desc = OptionDescription.createBuilder()
+                                        .webpImage(TripleInventory.identifier("textures/config/shulker_preview_" + position.toString().toLowerCase() + ".webp"))
+                                        .text(Text.translatable("config.tripleinventory.option.shulkerPosition.description"));
+                                    if (position == ShulkerPosition.LEFT_BOTTOM || position == ShulkerPosition.RIGHT_BOTTOM) {
+                                        desc.text(
+                                                Text.empty(),
+                                                Text.translatable("config.tripleinventory.option.shulkerPosition.description.warning.side_bottom").formatted(Formatting.GOLD)
+                                        );
+                                    }
+                                    else if (position == ShulkerPosition.LEFT_TOP || position == ShulkerPosition.RIGHT_TOP) {
+                                        desc.text(
+                                                Text.empty(),
+                                                Text.translatable("config.tripleinventory.option.shulkerPosition.description.warning.side_top").formatted(Formatting.GOLD)
+                                        );
+                                    }
+                                    if (position != config.shulkerPosition) {
+                                        desc.text(
+                                                Text.empty(),
+                                                Text.translatable("config.tripleinventory.option.shulkerPosition.description.warning.game_leave").formatted(Formatting.RED)
+                                        );
+                                    }
+                                    return desc.build();
+                                }
+                                )
+                                .binding(
+                                        defaults.shulkerPosition,
+                                        () -> config.shulkerPosition,
+                                        val -> config.shulkerPosition = val
+                                )
+                                .controller(opt -> EnumControllerBuilder
                                         .create(opt)
                                         .enumClass(ShulkerPosition.class)
-                        ).build()
-                )*/
+                                        .formatValue((position) -> Text.translatable("config.tripleinventory.enum.shulkerPosition." + position.toString().toLowerCase()))
+                                )
+                                .flag(GAME_LEAVE)
+                                .build()
+                )
                 .build();
 
         return builder

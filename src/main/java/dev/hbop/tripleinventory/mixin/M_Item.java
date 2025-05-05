@@ -1,6 +1,6 @@
 package dev.hbop.tripleinventory.mixin;
 
-import dev.hbop.tripleinventory.helper.ItemInventorySlot;
+import dev.hbop.tripleinventory.helper.ShulkerPreviewSlot;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ContainerComponent;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,7 +29,7 @@ public class M_Item {
     )
     private void onClicked(ItemStack stack, ItemStack otherStack, Slot slot, ClickType clickType, PlayerEntity player, StackReference cursorStackReference, CallbackInfoReturnable<Boolean> cir) {
         if (clickType != ClickType.RIGHT) return;
-        if (slot instanceof ItemInventorySlot) return;
+        if (slot instanceof ShulkerPreviewSlot) return;
         
         if (stack.isIn(ItemTags.SHULKER_BOXES)) {
             ContainerComponent component = stack.get(DataComponentTypes.CONTAINER);
@@ -38,7 +38,7 @@ public class M_Item {
             component.copyTo(stacks);
             int i = 0;
             for (Slot screenSlot : player.currentScreenHandler.slots) {
-                if (screenSlot instanceof ItemInventorySlot shulkerSlot) {
+                if (screenSlot instanceof ShulkerPreviewSlot shulkerSlot) {
                     int index = i;
                     shulkerSlot.enable(stack, slot, 
                             newStack -> {
@@ -65,7 +65,7 @@ public class M_Item {
             DefaultedList<ItemStack> stacks = player.getEnderChestInventory().getHeldStacks();
             int i = 0;
             for (Slot screenSlot : player.currentScreenHandler.slots) {
-                if (screenSlot instanceof ItemInventorySlot enderSlot) {
+                if (screenSlot instanceof ShulkerPreviewSlot enderSlot) {
                     int index = i;
                     enderSlot.enable(stack, slot,
                             newStack -> player.getEnderChestInventory().setStack(index, newStack),

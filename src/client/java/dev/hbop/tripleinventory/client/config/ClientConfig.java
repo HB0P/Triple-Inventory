@@ -31,5 +31,5 @@ public class ClientConfig {
     
     // shulker preview
     @SerialEntry public boolean colorShulkerBackground = true;
-    public ShulkerPosition shulkerPosition = ShulkerPosition.BOTTOM_MIDDLE;
+    @SerialEntry public ShulkerPosition shulkerPosition = ShulkerPosition.BOTTOM;
 }

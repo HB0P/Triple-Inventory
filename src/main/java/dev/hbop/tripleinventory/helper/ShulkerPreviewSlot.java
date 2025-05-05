@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public class ItemInventorySlot extends Slot {
+public class ShulkerPreviewSlot extends Slot {
 
     private boolean isEnabled;
     private ItemStack tiedStack;
@@ -47,7 +47,7 @@ public class ItemInventorySlot extends Slot {
         ));
     }
 
-    ItemInventorySlot(Inventory inventory, int index, int x, int y) {
+    public ShulkerPreviewSlot(Inventory inventory, int index, int x, int y) {
         super(inventory, index, x, y);
     }
 

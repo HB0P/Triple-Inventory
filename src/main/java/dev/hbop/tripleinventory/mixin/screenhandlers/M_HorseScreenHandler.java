@@ -34,7 +34,6 @@ public abstract class M_HorseScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory playerInventory, Inventory inventory, AbstractHorseEntity entity, int slotColumnCount, CallbackInfo ci) {
         this.world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, slot -> this.addSlot(slot));
     }
 
     @Redirect(

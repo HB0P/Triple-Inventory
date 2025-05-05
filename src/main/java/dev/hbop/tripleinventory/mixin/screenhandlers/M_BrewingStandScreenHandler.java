@@ -33,7 +33,6 @@ public abstract class M_BrewingStandScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate propertyDelegate, CallbackInfo ci) {
         world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, slot -> this.addSlot(slot));
     }
 
     @Redirect(

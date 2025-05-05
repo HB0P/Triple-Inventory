@@ -43,8 +43,7 @@
   "accessWidener": "tripleinventory.accesswidener",
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/world/World": ["dev/hbop/tripleinventory/InventorySizeProvider"],
-      "net/minecraft/client/world/ClientWorld": ["dev/hbop/tripleinventory/client/InventorySizeSetter"]
+      "net/minecraft/world/World": ["dev/hbop/tripleinventory/WorldInject"]
     }
   }
 }

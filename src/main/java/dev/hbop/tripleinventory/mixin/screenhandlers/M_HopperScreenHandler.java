@@ -31,7 +31,6 @@ public abstract class M_HopperScreenHandler extends ScreenHandler {
     )
     private void init(int syncId, PlayerInventory playerInventory, Inventory inventory, CallbackInfo ci) {
         this.world = playerInventory.player.getWorld();
-        InventoryHelper.addExtraSlots(playerInventory, 176, 133, slot -> this.addSlot(slot));
     }
 
     @Redirect(

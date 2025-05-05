@@ -30,7 +30,6 @@ public abstract class M_BeaconScreenHandler extends ScreenHandler {
     private void init(int syncId, Inventory inventory, PropertyDelegate propertyDelegate, ScreenHandlerContext context, CallbackInfo ci) {
         if (inventory instanceof PlayerInventory playerInventory) {
             this.world = playerInventory.player.getWorld();
-            InventoryHelper.addExtraSlots(playerInventory, 230, 219, 28, slot -> this.addSlot(slot));
         }
     }
 
