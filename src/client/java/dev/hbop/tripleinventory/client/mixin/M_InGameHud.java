@@ -1,11 +1,12 @@
 package dev.hbop.tripleinventory.client.mixin;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ClientSlotData;
 import dev.hbop.tripleinventory.client.config.ClientConfig;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -20,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.function.Function;
 
 @Mixin(InGameHud.class)
 public abstract class M_InGameHud {
@@ -47,11 +46,11 @@ public abstract class M_InGameHud {
         // left and right hotbar
         int size = player.getWorld().getExtendedInventorySize();
         if (size > 0) {
-            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 - 97 - 20 * size, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
-            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 - 116, context.getScaledWindowHeight() - 22, 21, 22);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 - 97 - 20 * size, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 - 116, context.getScaledWindowHeight() - 22, 21, 22);
 
-            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 + 95, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
-            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 + 76 + 20 * size, context.getScaledWindowHeight() - 22, 21, 22);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, 182, 22, 0, 0, context.getScaledWindowWidth() / 2 + 95, context.getScaledWindowHeight() - 22, -19 + 20 * size, 22);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, HOTBAR_TEXTURE, 182, 22, 161, 0, context.getScaledWindowWidth() / 2 + 76 + 20 * size, context.getScaledWindowHeight() - 22, 21, 22);
         }
         
         // previous selected slot
@@ -67,7 +66,7 @@ public abstract class M_InGameHud {
             else {
                 x = context.getScaledWindowWidth() / 2 + 94 + (prevSelectedSlot - 50) * 20;
             }
-            context.drawGuiTexture(RenderLayer::getGuiTextured, PREVIOUS_HOTBAR_SELECTION_TEXTURE, x, context.getScaledWindowHeight() - 23, 24, 23);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, PREVIOUS_HOTBAR_SELECTION_TEXTURE, x, context.getScaledWindowHeight() - 23, 24, 23);
         }
         
         // selected slot
@@ -80,7 +79,7 @@ public abstract class M_InGameHud {
             else {
                 x = context.getScaledWindowWidth() / 2 + 94 + (selectedSlot - 50) * 20;
             }
-            context.drawGuiTexture(RenderLayer::getGuiTextured, HOTBAR_SELECTION_TEXTURE, x, context.getScaledWindowHeight() - 23, 24, 23);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, HOTBAR_SELECTION_TEXTURE, x, context.getScaledWindowHeight() - 23, 24, 23);
         }
         
         // items
@@ -103,7 +102,7 @@ public abstract class M_InGameHud {
             method = "renderHotbar",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V",
+                    target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIII)V",
                     ordinal = 0
             ),
             slice = @Slice(
@@ -113,13 +112,13 @@ public abstract class M_InGameHud {
                     )
             )
     )
-    private void renderOffhandLeft(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
+    private void renderOffhandLeft(DrawContext instance, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height) {
         int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
         if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
-            context.drawGuiTexture(renderLayers, sprite, x - 6 - size * 20, y, width, height);
+            instance.drawGuiTexture(pipeline, sprite, x - 6 - size * 20, y, width, height);
         }
         else {
-            context.drawGuiTexture(renderLayers, sprite, x, y, width, height);
+            instance.drawGuiTexture(pipeline, sprite, x, y, width, height);
         }
     }
 
@@ -127,7 +126,7 @@ public abstract class M_InGameHud {
             method = "renderHotbar",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V",
+                    target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/util/Identifier;IIII)V",
                     ordinal = 0
             ),
             slice = @Slice(
@@ -137,13 +136,13 @@ public abstract class M_InGameHud {
                     )
             )
     )
-    private void renderOffhandRight(DrawContext context, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height) {
+    private void renderOffhandRight(DrawContext instance, RenderPipeline pipeline, Identifier sprite, int x, int y, int width, int height) {
         int size = this.getCameraPlayer().getWorld().getExtendedInventorySize();
         if (ClientConfig.HANDLER.instance().showExtendedHotbar && size > 0) {
-            context.drawGuiTexture(renderLayers, sprite, x + 6 + size * 20, y, width, height);
+            instance.drawGuiTexture(pipeline, sprite, x + 6 + size * 20, y, width, height);
         }
         else {
-            context.drawGuiTexture(renderLayers, sprite, x, y, width, height);
+            instance.drawGuiTexture(pipeline, sprite, x, y, width, height);
         }
     }
     

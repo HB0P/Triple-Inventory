@@ -4,16 +4,17 @@ import dev.hbop.tripleinventory.TripleInventory;
 import dev.hbop.tripleinventory.client.ModKeyBindings;
 import dev.hbop.tripleinventory.client.config.ClientConfig;
 import dev.hbop.tripleinventory.helper.InventoryHelper;
-import dev.hbop.tripleinventory.helper.ShulkerPreviewSlot;
 import dev.hbop.tripleinventory.helper.ShulkerPosition;
+import dev.hbop.tripleinventory.helper.ShulkerPreviewSlot;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.*;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +39,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     @Shadow protected abstract void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType);
     
     @Unique private static final Identifier EXTENSION_TEXTURE = TripleInventory.identifier("textures/gui/container/inventory_extension.png");
-    @Unique private Pair<Boolean, Boolean> showExtendedInventory = new Pair<>(true, true);
+    @Unique private Pair<Boolean, Boolean> showExtendedInventory = null;
 
     protected M_HandledScreen(Text title) {
         super(title);
@@ -46,7 +47,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
     
     // add shulker preview title
     @Inject(
-            method = "render",
+            method = "renderMain",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;drawForeground(Lnet/minecraft/client/gui/DrawContext;II)V"
@@ -60,7 +61,7 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             int size = this.client.world.getExtendedInventorySize();
             int x = position.getX(0, this.backgroundWidth, size);
             int y = position.getY(0, height);
-            context.drawText(this.textRenderer, getShulkerPreviewTitle(), x + 8, y + 7, 4210752, false);
+            context.drawText(this.textRenderer, getShulkerPreviewTitle(), x + 8, y + 7, Colors.DARK_GRAY, false);
         }
     }
     
@@ -80,30 +81,40 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
             updateShowExtendedInventory(true);
             if (showExtendedInventory.getLeft()) {
                 // left inventory
-                context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 4 - size * 18, this.y + height - 90, 0, 0, 25, 90, 256, 256);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x - 4 - size * 18, this.y + height - 90, 0, 0, 25, 90, 256, 256);
                 for (int i = 0; i < size - 2; i++) {
-                    context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 33 - i * 18, this.y + height - 90, 25, 0, 18, 90, 256, 256);
+                    context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x - 33 - i * 18, this.y + height - 90, 25, 0, 18, 90, 256, 256);
                 }
-                context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x - 15, this.y + height - 90, 43, 0, 19, 90, 256, 256);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x - 15, this.y + height - 90, 43, 0, 19, 90, 256, 256);
             }
             if (showExtendedInventory.getRight()) {
                 // right inventory
-                context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x + this.backgroundWidth - 4, this.y + height - 90, 194, 0, 19, 90, 256, 256);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x + this.backgroundWidth - 4, this.y + height - 90, 194, 0, 19, 90, 256, 256);
                 for (int i = 0; i < size - 2; i++) {
-                    context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x + this.backgroundWidth + 15 + i * 18, this.y + height - 90, 213, 0, 18, 90, 256, 256);
+                    context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x + this.backgroundWidth + 15 + i * 18, this.y + height - 90, 213, 0, 18, 90, 256, 256);
                 }
-                context.drawTexture(RenderLayer::getGuiTextured, EXTENSION_TEXTURE, this.x + this.backgroundWidth - 21 + size * 18, this.y + height - 90, 231, 0, 25, 90, 256, 256);
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EXTENSION_TEXTURE, this.x + this.backgroundWidth - 21 + size * 18, this.y + height - 90, 231, 0, 25, 90, 256, 256);
             }
         }
         
         // show shulker preview background
         if (showShulkerPreview()) {
             ShulkerPosition position = ClientConfig.HANDLER.instance().shulkerPosition;
+            int adjustedSize;
+            if (
+                    (HandledScreen<?>)(Object)this instanceof RecipeBookScreen<?> recipeBookScreen
+                            && recipeBookScreen.recipeBook.isOpen()
+                            && !ClientConfig.HANDLER.instance().showExtendedInventoryWithRecipeBook
+            ) {
+                adjustedSize = 0;
+            }
+            else adjustedSize = size;
+            
             int x = position.getX(this.x, this.backgroundWidth, size);
             int y = position.getY(this.y, height);
             context.drawTexture(
-                    RenderLayer::getGuiTextured, 
-                    position.getTexture(this.backgroundWidth, height, size), 
+                    RenderPipelines.GUI_TEXTURED, 
+                    position.getTexture(this.backgroundWidth, height, adjustedSize), 
                     x, y,
                     0, 0, 
                     176, 78, 
@@ -247,14 +258,14 @@ public abstract class M_HandledScreen<T extends ScreenHandler> extends Screen {
         
         if (!refreshSlots) return;
         
-        if (showExtendedInventory.getLeft() != prevValue.getLeft()) {
+        if (prevValue == null || showExtendedInventory.getLeft() != prevValue.getLeft()) {
             for (Slot slot : this.handler.slots) {
                 if (slot instanceof InventoryHelper.ExtendedSlot extendedSlot) {
                     if (!extendedSlot.isRight) extendedSlot.isEnabled = showExtendedInventory.getLeft();
                 }
             }
         }
-        if (showExtendedInventory.getRight() != prevValue.getRight()) {
+        if (prevValue == null || showExtendedInventory.getRight() != prevValue.getRight()) {
             for (Slot slot : this.handler.slots) {
                 if (slot instanceof InventoryHelper.ExtendedSlot extendedSlot) {
                     if (extendedSlot.isRight) extendedSlot.isEnabled = showExtendedInventory.getRight();

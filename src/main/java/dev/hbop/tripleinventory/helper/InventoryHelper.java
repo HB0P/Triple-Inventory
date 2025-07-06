@@ -68,6 +68,11 @@ public class InventoryHelper {
         public boolean isEnabled() {
             return isEnabled && this.world.getExtendedInventorySize() >= maxSize;
         }
+        
+        @Override
+        public boolean canInsert(ItemStack stack) {
+            return isEnabled();
+        }
     }
     
     public interface InsertItemFunction {

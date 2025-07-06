@@ -50,7 +50,7 @@
 	"config.tripleinventory.option.shulkerPosition.description": "The position of the shulker preview",
 	"config.tripleinventory.option.shulkerPosition.description.warning.side_bottom": "The extended inventory will be hidden when the shulker preview is open",
 	"config.tripleinventory.option.shulkerPosition.description.warning.side_top": "In small screens (such as hoppers), the extended inventory will be hidden when the shulker preview is open",
-	"config.tripleinventory.option.shulkerPosition.description.warning.game_leave": "Changing this option requires leaving the game",
+	"config.tripleinventory.option.shulkerPosition.description.warning.in_world": "This option cannot be changed while in a world",
 	
 	"config.tripleinventory.enum.shulkerPosition.top": "Top",
 	"config.tripleinventory.enum.shulkerPosition.bottom": "Bottom",

@@ -5,11 +5,12 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.StackWithSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.collection.DefaultedList;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -73,7 +74,7 @@ public abstract class M_PlayerInventory {
     )
     private void getEmptySlot(CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + extended.size(); i++) {
+            for (int i = 43; i < 43 + extended.size(); i++) {
                 if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && this.getStack(i).isEmpty()) {
                     cir.setReturnValue(i);
                     return;
@@ -133,7 +134,7 @@ public abstract class M_PlayerInventory {
             cancellable = true
     )
     private static void isValidHotbarIndex(int slot, CallbackInfoReturnable<Boolean> cir) {
-        if (slot >= 41 && slot <= 58) {
+        if (slot >= 41 && slot <= 58) { 
             cir.setReturnValue(true);
         }
     }
@@ -146,7 +147,7 @@ public abstract class M_PlayerInventory {
     )
     private void getSlotWithStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + extended.size(); i++) {
+            for (int i = 43; i < 43 + extended.size(); i++) {
                 if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && !this.getStack(i).isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, this.getStack(i))) {
                     cir.setReturnValue(i);
                     return;
@@ -163,7 +164,7 @@ public abstract class M_PlayerInventory {
     )
     private void getMatchingSlot(RegistryEntry<Item> item, ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + extended.size(); i++) {
+            for (int i = 43; i < 43 + extended.size(); i++) {
                 if (InventoryHelper.isSlotEnabled(i, this.player.getWorld())) {
                     ItemStack itemStack = getStack(i);
                     if (!itemStack.isEmpty()
@@ -187,7 +188,7 @@ public abstract class M_PlayerInventory {
     )
     private void getOccupiedSlotWithRoomForStack(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (cir.getReturnValue() == -1) {
-            for (int i = 41; i < 41 + extended.size(); i++) {
+            for (int i = 43; i < 43 + extended.size(); i++) {
                 if (InventoryHelper.isSlotEnabled(i, this.player.getWorld()) && this.canStackAddMore(this.getStack(i), stack)) {
                     cir.setReturnValue(i);
                     return;
@@ -202,7 +203,7 @@ public abstract class M_PlayerInventory {
             at = @At("TAIL")
     )
     private void updateItems(CallbackInfo ci) {
-        for (int i = 41; i < 41 + this.extended.size(); i++) {
+        for (int i = 43; i < 43 + this.extended.size(); i++) {
             ItemStack itemStack = this.getStack(i);
             if (!itemStack.isEmpty()) {
                 itemStack.inventoryTick(this.player.getWorld(), this.player, i == this.selectedSlot ? EquipmentSlot.MAINHAND : null);
@@ -241,8 +242,8 @@ public abstract class M_PlayerInventory {
             cancellable = true
     )
     private void removeStack(int slot, int amount, CallbackInfoReturnable<ItemStack> cir) {
-        if (slot >= 41 && slot < 41 + extended.size()) {
-            cir.setReturnValue(Inventories.splitStack(this.extended, slot - 41, amount));
+        if (slot >= 43 && slot < 43 + extended.size()) {
+            cir.setReturnValue(Inventories.splitStack(this.extended, slot - 43, amount));
         }
     }
     
@@ -252,7 +253,7 @@ public abstract class M_PlayerInventory {
             cancellable = true
     )
     private void removeOne(ItemStack stack, CallbackInfo ci) {
-        for (int i = 41; i < 41 + this.extended.size(); i++) {
+        for (int i = 43; i < 43 + this.extended.size(); i++) {
             if (this.getStack(i) == stack) {
                 this.setStack(i, ItemStack.EMPTY);
                 ci.cancel();
@@ -266,7 +267,7 @@ public abstract class M_PlayerInventory {
             cancellable = true
     )
     private void removeStack(int slot, CallbackInfoReturnable<ItemStack> cir) {
-        if (slot >= 41 && slot < 41 + extended.size()) {
+        if (slot >= 43 && slot < 43 + extended.size()) {
             ItemStack itemStack = this.getStack(slot);
             this.setStack(slot, ItemStack.EMPTY);
             cir.setReturnValue(itemStack);
@@ -279,40 +280,33 @@ public abstract class M_PlayerInventory {
             at = @At("TAIL")
     )
     private void setStack(int slot, ItemStack stack, CallbackInfo ci) {
-        if (slot >= 41) {
-            this.extended.set(slot - 41, stack);
+        if (slot >= 43) {
+            this.extended.set(slot - 43, stack);
         }
     }
-
-    // write extended slots to nbt 
+    
     @Inject(
-            method = "writeNbt",
-            at = @At("RETURN")
+            method = "writeData",
+            at = @At("TAIL")
     )
-    private void writeNbt(NbtList nbtList, CallbackInfoReturnable<NbtList> cir) {
-        for (int i = 0; i < extended.size(); i++) {
-            if (!extended.get(i).isEmpty()) {
-                NbtCompound nbtCompound = new NbtCompound();
-                nbtCompound.putByte("Slot", (byte)(i + 175));
-                nbtList.add(extended.get(i).toNbt(this.player.getRegistryManager(), nbtCompound));
+    private void writeData(WriteView.ListAppender<StackWithSlot> list, CallbackInfo ci) {
+        for (int i = 0; i < this.extended.size(); i++) {
+            ItemStack itemStack = this.extended.get(i);
+            if (!itemStack.isEmpty()) {
+                list.add(new StackWithSlot(i + 36, itemStack));
             }
         }
     }
-
-    // read extended slots from nbt 
+    
     @Inject(
-            method = "readNbt",
-            at = @At("RETURN")
+            method = "readData",
+            at = @At("TAIL")
     )
-    private void readNbt(NbtList nbtList, CallbackInfo ci) {
-        extended.clear();
-
-        for (int i = 0; i < nbtList.size(); i++) {
-            NbtCompound nbtCompound = nbtList.getCompoundOrEmpty(i);
-            int j = nbtCompound.getByte("Slot", (byte) 0) & 255;
-            ItemStack itemStack = ItemStack.fromNbt(this.player.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY);
-            if (j >= 175 && j < extended.size() + 175) {
-                extended.set(j - 175, itemStack);
+    public void readData(ReadView.TypedListReadView<StackWithSlot> list, CallbackInfo ci) {
+        for (StackWithSlot stackWithSlot : list) {
+            int slot = stackWithSlot.slot();
+            if (slot >= 36 && slot < 36 + extended.size()) {
+                this.extended.set(slot - 36, stackWithSlot.stack());
             }
         }
     }
@@ -350,8 +344,8 @@ public abstract class M_PlayerInventory {
             cancellable = true
     )
     private void getStack(int slot, CallbackInfoReturnable<ItemStack> cir) {
-        if (slot >= 41) {
-            cir.setReturnValue(this.extended.get(slot - 41));
+        if (slot >= 43) {
+            cir.setReturnValue(this.extended.get(slot - 43));
         }
     }
     
@@ -361,7 +355,7 @@ public abstract class M_PlayerInventory {
             at = @At("TAIL")
     )
     private void dropAll(CallbackInfo ci) {
-        for (int i = 41; i < 41 + this.extended.size(); i++) {
+        for (int i = 43; i < 43 + this.extended.size(); i++) {
             ItemStack itemStack = getStack(i);
             if (!itemStack.isEmpty()) {
                 this.player.dropItem(itemStack, true, false);
