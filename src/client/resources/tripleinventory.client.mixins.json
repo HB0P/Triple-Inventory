@@ -7,6 +7,7 @@
     "M_ClientPlayerInteractionManager",
     "M_ClientWorld",
     "M_CreativeInventoryScreen",
+    "M_CreativeScreenHandler",
     "M_HandledScreen",
     "M_InGameHud",
     "M_InventoryScreen",
